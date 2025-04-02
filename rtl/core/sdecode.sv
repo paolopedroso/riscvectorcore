@@ -267,17 +267,15 @@ always_comb begin
    end
 
 always_ff @(posedge clk) begin
-    if (rst_n) begin
-        r1data_o <= 5'b0;
-        r2data_o <= 5'b0;
-        opcode_o <= 7'b0;
-        rd_addr_o <= 5'b0;
-    end else begin
-        r1data_o <= regs1;
-        r2data_o <= regs2;
-        opcode_o <= opcode_d;
-        rd_addr_o <= rd;
-    end
+   if (!rst_n) begin
+      rs1_addr_o <= 5'b0;
+      rs2_addr_o <= 5'b0;
+      rd_addr_o <= 5'b0;
+   end else begin
+      rs1_addr_o <= regs1;
+      rs2_addr_o <= regs2;
+      rd_addr_o <= rd;
+   end
 end
 
 
