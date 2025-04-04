@@ -1,5 +1,5 @@
 /*
- * Program Counter
+ * Scalar Register File
  *
  * @copyright 2025 Paolo Pedroso <paoloapedroso@gmail.com>
  *

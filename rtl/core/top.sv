@@ -1,3 +1,11 @@
+/*
+ * 32-bit RISC-V Vector Core
+ *
+ * @copyright 2025 Paolo Pedroso <paoloapedroso@gmail.com>
+ *
+ * @license Apache 2.0
+ */
+
 module top #(
     parameter int DATA_WIDTH = 32
 ) (
@@ -294,7 +302,7 @@ sdatamem sdatamem_inst (
     .rdata_o(mem_rdata)
 );
 
-sinstr_mem instr_mem_inst (
+instr_mem instr_mem_inst (
     .clk(clk),
     .rst_n(rst_n),
     .addr_i(pc_out),
