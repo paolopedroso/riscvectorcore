@@ -15,7 +15,7 @@ module salu #(
 
     input logic [DATA_WIDTH-1:0] rs1_data_i,
     input logic [DATA_WIDTH-1:0] rs2_data_i,
-    input logic [3:0] alu_op_in, // funct3
+    input logic [3:0] alu_op_in,
 
     output logic [DATA_WIDTH-1:0] alu_res_o,
     output logic zero_flag_o,
@@ -23,46 +23,40 @@ module salu #(
     output logic overflow_flag_o
 );
 
-// Internal signals
+localparam logic [3:0] 
+    ADD   = 4'b0000,
+    SUB   = 4'b0001,
+    SLL   = 4'b0010,
+    SLT   = 4'b0011,
+    SLTU  = 4'b0100,
+    XOR   = 4'b0101,
+    SRL   = 4'b0110,
+    SRA   = 4'b0111,
+    OR    = 4'b1000,
+    AND   = 4'b1001,
+    BEQ   = 4'b1010,
+    BNE   = 4'b1011,
+    BLT   = 4'b1100,
+    BGE   = 4'b1101,
+    BLTU  = 4'b1110,
+    BGEU  = 4'b1111;
+
 logic [DATA_WIDTH-1:0] add_result;
 logic [DATA_WIDTH-1:0] sub_result;
-logic [DATA_WIDTH:0]   add_overflow_check; // Extra bit for overflow detection
-logic [DATA_WIDTH:0]   sub_overflow_check; // Extra bit for overflow detection
-// Data signals
+logic [DATA_WIDTH:0] add_overflow_check;
+logic [DATA_WIDTH:0] sub_overflow_check;
+
 logic [DATA_WIDTH-1:0] alu_res_d;
 logic zero_flag_d;
 logic negative_flag_d;
 logic overflow_flag_d;
 
-// ALU operations as defined in the decoder
-localparam logic [3:0] ADD   = 4'b0000;
-localparam logic [3:0] SUB   = 4'b0001;
-localparam logic [3:0] SLL   = 4'b0010;
-localparam logic [3:0] SLT   = 4'b0011;
-localparam logic [3:0] SLTU  = 4'b0100;
-localparam logic [3:0] XOR   = 4'b0101;
-localparam logic [3:0] SRL   = 4'b0110;
-localparam logic [3:0] SRA   = 4'b0111;
-localparam logic [3:0] OR    = 4'b1000;
-localparam logic [3:0] AND   = 4'b1001;
-localparam logic [3:0] BEQ   = 4'b1010;
-localparam logic [3:0] BNE   = 4'b1011;
-localparam logic [3:0] BLT   = 4'b1100;
-localparam logic [3:0] BGE   = 4'b1101;
-localparam logic [3:0] BLTU  = 4'b1110;
-localparam logic [3:0] BGEU  = 4'b1111;
-
-// Pre-compute common operations
 assign add_result = rs1_data_i + rs2_data_i;
 assign sub_result = rs1_data_i - rs2_data_i;
 
-// Overflow detection signals
-assign add_overflow_check = {rs1_data_i[DATA_WIDTH-1], rs1_data_i} +
-                          {rs2_data_i[DATA_WIDTH-1], rs2_data_i};
-assign sub_overflow_check = {rs1_data_i[DATA_WIDTH-1], rs1_data_i} -
-                          {rs2_data_i[DATA_WIDTH-1], rs2_data_i};
+assign add_overflow_check = {1'b0, rs1_data_i} + {1'b0, rs2_data_i};
+assign sub_overflow_check = {1'b0, rs1_data_i} - {1'b0, rs2_data_i};
 
-// Result selection based on alu_op
 always_comb begin
     alu_res_d = '0;
     zero_flag_d = 1'b0;
@@ -83,20 +77,18 @@ always_comb begin
         end
 
         SLL: begin
-            alu_res_d = rs1_data_i << rs2_data_i[4:0]; // Shift amount limited to 5 bits
+            alu_res_d = rs1_data_i << rs2_data_i[4:0];
         end
 
         SLT: begin
-            // Signed comparison
             if (rs1_data_i[DATA_WIDTH-1] != rs2_data_i[DATA_WIDTH-1])
-                alu_res_d = rs1_data_i[DATA_WIDTH-1] ? 1 : 0;
+                alu_res_d = rs1_data_i[DATA_WIDTH-1] ? 32'd1 : 32'd0;
             else
-                alu_res_d = (rs1_data_i < rs2_data_i) ? 1 : 0;
+                alu_res_d = (rs1_data_i < rs2_data_i) ? 32'd1 : 32'd0;
         end
 
         SLTU: begin
-            // Unsigned comparison
-            alu_res_d = (rs1_data_i < rs2_data_i) ? 1 : 0;
+            alu_res_d = (rs1_data_i < rs2_data_i) ? 32'd1 : 32'd0;
         end
 
         XOR: begin
@@ -104,11 +96,10 @@ always_comb begin
         end
 
         SRL: begin
-            alu_res_d = rs1_data_i >> rs2_data_i[4:0]; // Shift amount limited to 5 bits
+            alu_res_d = rs1_data_i >> rs2_data_i[4:0];
         end
 
         SRA: begin
-            // fix
             alu_res_d = $signed(rs1_data_i) >>> rs2_data_i[4:0];
         end
 
@@ -120,26 +111,25 @@ always_comb begin
             alu_res_d = rs1_data_i & rs2_data_i;
         end
 
-        // Branch conditions
         BEQ: begin
             alu_res_d = sub_result;
+            zero_flag_d = (sub_result == 0);
         end
 
         BNE: begin
             alu_res_d = sub_result;
+            zero_flag_d = (sub_result != 0);
         end
 
         BLT, BGE: begin
-            // Signed comparison similar to SLT
             if (rs1_data_i[DATA_WIDTH-1] != rs2_data_i[DATA_WIDTH-1])
-                alu_res_d = rs1_data_i[DATA_WIDTH-1] ? 1 : 0;
+                alu_res_d = rs1_data_i[DATA_WIDTH-1] ? 32'd1 : 32'd0;
             else
-                alu_res_d = (rs1_data_i < rs2_data_i) ? 1 : 0;
+                alu_res_d = (rs1_data_i < rs2_data_i) ? 32'd1 : 32'd0;
         end
 
         BLTU, BGEU: begin
-            // Unsigned comparison similar to SLTU
-            alu_res_d = (rs1_data_i < rs2_data_i) ? 1 : 0;
+            alu_res_d = (rs1_data_i < rs2_data_i) ? 32'd1 : 32'd0;
         end
 
         default: begin
@@ -147,12 +137,10 @@ always_comb begin
         end
     endcase
 
-    // Set flags based on result
     zero_flag_d = (alu_res_d == 0);
     negative_flag_d = alu_res_d[DATA_WIDTH-1];
 end
 
-// Added Pipeline
 always_ff @(posedge clk) begin
     if (!rst_n) begin
         alu_res_o <= 32'b0;
