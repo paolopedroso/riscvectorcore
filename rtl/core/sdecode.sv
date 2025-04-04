@@ -51,7 +51,7 @@ module sdecode #(
 );
 
 // Parsing
-wire [6:0] opcode_d = instr_in[6:0];
+wire [6:0] opcode = instr_in[6:0];
 wire [2:0] rd = instr_in[11:7];
 wire [2:0] funct3 = instr_in[14:12];
 wire [4:0] regs1 = instr_in[19:15];
@@ -176,7 +176,7 @@ always_comb begin
                reg_write_en_o = 1'b1;
                uses_rs1_o = 1'b1;
 
-               case (funct3)
+               unique case (funct3)
                   3'b000: alu_op_o = 4'b0000; // ADDI
                   3'b001: alu_op_o = 4'b0010; // SLLI
                   3'b010: alu_op_o = 4'b0011; // SLTI
@@ -201,7 +201,7 @@ always_comb begin
                   3'b010: mem_size_o = 2'b10; // LW
                   3'b100: mem_size_o = 2'b00; // LBU
                   3'b101: mem_size_o = 2'b01; // LHU
-                  default: mem_size_o = 2'b10;
+                  default: mem_size_o = 2'b10; // Default load word
                endcase
             end
 

@@ -20,22 +20,22 @@ module sregfile #(
     output logic [DATA_WIDTH-1:0] rs2_data_o,
 
     input logic [4:0] rd_addr_i,
-    input logic [DATA_WIDTH-1] rd_data_i,
-    input logic reg_write_en_o
+    input logic [DATA_WIDTH-1:0] rd_data_i,
+    input logic reg_write_en_i
 );
 
 logic [DATA_WIDTH-1:0] register [REG_COUNT-1];
 
 always_comb begin
     if (rs1_addr_i == 5'b0) begin
-        rs1_data_o = 5'b0;
+        rs1_data_o = 32'b0;
     end else begin
         rs1_data_o = register[rs1_addr_i];
     end
     if (rs2_addr_i == 5'b0) begin
-        rs2_addr_i = 5'b0;
+        rs2_data_o = 32'b0;
     end else begin
-        rs2_data_i = register[rs2_addr_i];
+        rs2_data_o = register[rs2_addr_i];
     end
 end
 
@@ -47,7 +47,7 @@ always_ff @(posedge clk) begin
     end
 
     // Write back
-    else if (reg_write_en_o && rd_addr_i != 5'b0) begin
+    else if (reg_write_en_i && rd_addr_i != 5'b0) begin
         register[rd_addr_i] <= rd_data_i;
     end
 end

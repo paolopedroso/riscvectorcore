@@ -1,12 +1,3 @@
-/*
- * Small Vector RISC-V Core
- *
- * @copyright 2025 Paolo Pedroso <paoloapedroso@gmail.com>
- *
- * @license Apache 2.0
- *
- */
-
 module top #(
     parameter int DATA_WIDTH = 32
 ) (
@@ -15,11 +6,16 @@ module top #(
 );
 
 // Internal signals
+// Program counter and instruction signals
 logic [DATA_WIDTH-1:0] pc_out;
 logic [DATA_WIDTH-1:0] instr;
 logic                  instr_valid;
+logic                  stall_pipeline;
+logic                  pc_write;
+logic                  take_branch;
+logic                  pc_src;
 
-// Decoder outputs
+// Decoder signals
 logic [4:0]             rs1_addr;
 logic [4:0]             rs2_addr;
 logic [4:0]             rd_addr;
@@ -46,47 +42,219 @@ logic [DATA_WIDTH-1:0]  alu_result;
 logic                   zero_flag;
 logic                   negative_flag;
 logic                   overflow_flag;
+logic [DATA_WIDTH-1:0]  alu_input_a;
+logic [DATA_WIDTH-1:0]  alu_input_b;
+logic [DATA_WIDTH-1:0]  alu_rs2_input;
+logic [1:0]             forward_a;
+logic [1:0]             forward_b;
 
 // Memory signals
 logic [DATA_WIDTH-1:0]  mem_rdata;
 
-// Instruction fetch from memory
-assign instr_valid = 1'b1; // For simplicity
+// Pipeline registers
+// IF/ID
+logic [DATA_WIDTH-1:0] if_id_pc;
+logic [DATA_WIDTH-1:0] if_id_instr;
+
+// ID/EX
+logic [DATA_WIDTH-1:0] id_ex_pc;
+logic [DATA_WIDTH-1:0] id_ex_rs1_data;
+logic [DATA_WIDTH-1:0] id_ex_rs2_data;
+logic [DATA_WIDTH-1:0] id_ex_imm;
+logic [4:0]            id_ex_rs1_addr;
+logic [4:0]            id_ex_rs2_addr;
+logic [4:0]            id_ex_rd_addr;
+logic                  id_ex_reg_write;
+logic                  id_ex_mem_read;
+logic                  id_ex_mem_write;
+logic [1:0]            id_ex_mem_size;
+logic                  id_ex_branch;
+logic                  id_ex_jump;
+logic [1:0]            id_ex_result_src;
+logic [3:0]            id_ex_alu_op;
+logic                  id_ex_imm_valid;
+
+// EX/MEM
+logic [DATA_WIDTH-1:0] ex_mem_pc;
+logic [DATA_WIDTH-1:0] ex_mem_alu_result;
+logic [DATA_WIDTH-1:0] ex_mem_rs2_data;
+logic [DATA_WIDTH-1:0] ex_mem_imm;
+logic [4:0]            ex_mem_rd_addr;
+logic                  ex_mem_reg_write;
+logic                  ex_mem_mem_read;
+logic                  ex_mem_mem_write;
+logic [1:0]            ex_mem_mem_size;
+logic [1:0]            ex_mem_result_src;
+logic                  ex_mem_zero_flag;
+logic                  ex_mem_branch;
+logic                  ex_mem_jump;
+
+// MEM/WB
+logic [DATA_WIDTH-1:0] mem_wb_alu_result;
+logic [DATA_WIDTH-1:0] mem_wb_mem_data;
+logic [DATA_WIDTH-1:0] mem_wb_pc;
+logic [4:0]            mem_wb_rd_addr;
+logic                  mem_wb_reg_write;
+logic [1:0]            mem_wb_result_src;
+
+// Control signals
+assign instr_valid = 1'b1;
+assign take_branch = ex_mem_branch && ex_mem_zero_flag;
+assign pc_src = take_branch || ex_mem_jump;
+assign pc_write = !stall_pipeline;
+
+// Forwarding muxes
+always_comb begin
+    case (forward_a)
+        2'b00: alu_input_a = id_ex_rs1_data;
+        2'b01: alu_input_a = rd_data;
+        2'b10: alu_input_a = ex_mem_alu_result;
+        default: alu_input_a = id_ex_rs1_data;
+    endcase
+    
+    case (forward_b)
+        2'b00: alu_rs2_input = id_ex_rs2_data;
+        2'b01: alu_rs2_input = rd_data;
+        2'b10: alu_rs2_input = ex_mem_alu_result;
+        default: alu_rs2_input = id_ex_rs2_data;
+    endcase
+    
+    alu_input_b = id_ex_imm_valid ? id_ex_imm : alu_rs2_input;
+end
+
+// Pipeline registers update
+always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        if_id_pc <= '0;
+        if_id_instr <= '0;
+        
+        id_ex_pc <= '0;
+        id_ex_rs1_data <= '0;
+        id_ex_rs2_data <= '0;
+        id_ex_imm <= '0;
+        id_ex_rs1_addr <= '0;
+        id_ex_rs2_addr <= '0;
+        id_ex_rd_addr <= '0;
+        id_ex_reg_write <= '0;
+        id_ex_mem_read <= '0;
+        id_ex_mem_write <= '0;
+        id_ex_mem_size <= '0;
+        id_ex_branch <= '0;
+        id_ex_jump <= '0;
+        id_ex_result_src <= '0;
+        id_ex_alu_op <= '0;
+        id_ex_imm_valid <= '0;
+        
+        ex_mem_pc <= '0;
+        ex_mem_alu_result <= '0;
+        ex_mem_rs2_data <= '0;
+        ex_mem_imm <= '0;
+        ex_mem_rd_addr <= '0;
+        ex_mem_reg_write <= '0;
+        ex_mem_mem_read <= '0;
+        ex_mem_mem_write <= '0;
+        ex_mem_mem_size <= '0;
+        ex_mem_result_src <= '0;
+        ex_mem_zero_flag <= '0;
+        ex_mem_branch <= '0;
+        ex_mem_jump <= '0;
+        
+        mem_wb_alu_result <= '0;
+        mem_wb_mem_data <= '0;
+        mem_wb_pc <= '0;
+        mem_wb_rd_addr <= '0;
+        mem_wb_reg_write <= '0;
+        mem_wb_result_src <= '0;
+    end
+    else begin
+        if (!stall_pipeline) begin
+            if_id_pc <= pc_out;
+            if_id_instr <= instr;
+        end
+        
+        if (stall_pipeline) begin
+            id_ex_reg_write <= 1'b0;
+            id_ex_mem_read <= 1'b0;
+            id_ex_mem_write <= 1'b0;
+            id_ex_branch <= 1'b0;
+            id_ex_jump <= 1'b0;
+        end else if (pc_src) begin
+            id_ex_reg_write <= 1'b0;
+            id_ex_mem_read <= 1'b0;
+            id_ex_mem_write <= 1'b0;
+            id_ex_branch <= 1'b0;
+            id_ex_jump <= 1'b0;
+        end else begin
+            id_ex_pc <= if_id_pc;
+            id_ex_rs1_data <= rs1_data;
+            id_ex_rs2_data <= rs2_data;
+            id_ex_imm <= imm_value;
+            id_ex_rs1_addr <= rs1_addr;
+            id_ex_rs2_addr <= rs2_addr;
+            id_ex_rd_addr <= rd_addr;
+            id_ex_reg_write <= reg_write_en;
+            id_ex_mem_read <= mem_read;
+            id_ex_mem_write <= mem_write;
+            id_ex_mem_size <= mem_size;
+            id_ex_branch <= branch;
+            id_ex_jump <= jump;
+            id_ex_result_src <= result_src;
+            id_ex_alu_op <= alu_op;
+            id_ex_imm_valid <= imm_valid;
+        end
+        
+        ex_mem_pc <= id_ex_pc;
+        ex_mem_alu_result <= alu_result;
+        ex_mem_rs2_data <= id_ex_rs2_data;
+        ex_mem_imm <= id_ex_imm;
+        ex_mem_rd_addr <= id_ex_rd_addr;
+        ex_mem_reg_write <= id_ex_reg_write;
+        ex_mem_mem_read <= id_ex_mem_read;
+        ex_mem_mem_write <= id_ex_mem_write;
+        ex_mem_mem_size <= id_ex_mem_size;
+        ex_mem_result_src <= id_ex_result_src;
+        ex_mem_zero_flag <= zero_flag;
+        ex_mem_branch <= id_ex_branch;
+        ex_mem_jump <= id_ex_jump;
+        
+        mem_wb_alu_result <= ex_mem_alu_result;
+        mem_wb_mem_data <= mem_rdata;
+        mem_wb_pc <= ex_mem_pc;
+        mem_wb_rd_addr <= ex_mem_rd_addr;
+        mem_wb_reg_write <= ex_mem_reg_write;
+        mem_wb_result_src <= ex_mem_result_src;
+    end
+end
 
 program_counter pc_inst (
     .clk(clk),
     .rst_n(rst_n),
-    .instr(instr),
-    .branch_en(branch && zero_flag),
-    .jmp_en(jump),
-    .imm(imm_value),
-    .pc_in(pc_out),
-
+    .pc_write(pc_write),
+    .branch_en(take_branch),
+    .jmp_en(ex_mem_jump),
+    .imm(ex_mem_imm),
+    .pc_i(pc_src ? ex_mem_pc : pc_out),
     .pc_out(pc_out)
 );
 
 sdecode sdecode_inst (
     .clk(clk),
     .rst_n(rst_n),
-    .instr_in(instr),
+    .instr_in(if_id_instr),
     .instr_valid(instr_valid),
-
     .rs1_addr_o(rs1_addr),
     .rs2_addr_o(rs2_addr),
     .rd_addr_o(rd_addr),
-    .reg_write_en(reg_write_en),
-
+    .reg_write_en_o(reg_write_en),
     .imm_value_o(imm_value),
     .imm_valid_o(imm_valid),
-
-    .alu_op_o(alu_op), // funct3
+    .alu_op_o(alu_op),
     .mem_read_o(mem_read),
     .mem_write_o(mem_write),
     .mem_size_o(mem_size),
     .branch_o(branch),
     .jump_o(jump),
     .result_src_o(result_src),
-
     .uses_rs1_o(uses_rs1),
     .uses_rs2_o(uses_rs2)
 );
@@ -94,44 +262,72 @@ sdecode sdecode_inst (
 sregfile sregfile_inst (
     .clk(clk),
     .rst_n(rst_n),
-
-    // Linking Decode Stage
     .rs1_addr_i(rs1_addr),
     .rs1_data_o(rs1_data),
-
     .rs2_addr_i(rs2_addr),
     .rs2_data_o(rs2_data),
-
-    // write back inputs
-    .rd_addr_i(rd_addr),
+    .rd_addr_i(mem_wb_rd_addr),
     .rd_data_i(rd_data),
-    .reg_write_en_i(reg_write_en)
+    .reg_write_en_i(mem_wb_reg_write)
 );
-
-// Write-back mux
-always_comb begin
-    case (result_src)
-        2'b00: rd_data = alu_result;      // ALU result
-        2'b01: rd_data = mem_rdata;       // Memory load
-        2'b10: rd_data = pc_out + 4;      // PC+4 for jumps
-        default: rd_data = alu_result;
-    endcase
-end
 
 salu salu_inst (
     .clk(clk),
     .rst_n(rst_n),
-
-    .rs1_data_in(rs1_data),
-    .rs2_data_in(imm_valid ? imm_value : rs2_data),  // Mux for immediate
-    .alu_op_in(alu_op),
-
-    .result_out(alu_result),
+    .rs1_data_i(alu_input_a),
+    .rs2_data_i(alu_input_b),
+    .alu_op_in(id_ex_alu_op),
+    .alu_res_o(alu_result),
     .zero_flag_o(zero_flag),
     .negative_flag_o(negative_flag),
     .overflow_flag_o(overflow_flag)
 );
 
+sdatamem sdatamem_inst (
+    .clk(clk),
+    .rst_n(rst_n),
+    .mem_read_i(ex_mem_mem_read),
+    .mem_write_i(ex_mem_mem_write),
+    .mem_size_i(ex_mem_mem_size),
+    .addr_i(ex_mem_alu_result),
+    .wdata_i(ex_mem_rs2_data),
+    .rdata_o(mem_rdata)
+);
 
+sinstr_mem instr_mem_inst (
+    .clk(clk),
+    .rst_n(rst_n),
+    .addr_i(pc_out),
+    .instr_o(instr)
+);
+
+swbmux swbmux_inst (
+    .result_src_i(mem_wb_result_src),
+    .alu_result(mem_wb_alu_result),
+    .mem_rdata(mem_wb_mem_data),
+    .pc_i(mem_wb_pc),
+    .rd_data_o(rd_data)
+);
+
+shazard_detection shazard_detect_inst (
+    .id_rs1_addr(rs1_addr),
+    .id_rs2_addr(rs2_addr),
+    .id_uses_rs1(uses_rs1),
+    .id_uses_rs2(uses_rs2),
+    .ex_mem_read(id_ex_mem_read),
+    .ex_rd_addr(id_ex_rd_addr),
+    .stall_pipeline(stall_pipeline)
+);
+
+forwarding_unit forward_inst (
+    .ex_rs1_addr(id_ex_rs1_addr),
+    .ex_rs2_addr(id_ex_rs2_addr),
+    .mem_reg_write(ex_mem_reg_write),
+    .mem_rd_addr(ex_mem_rd_addr),
+    .wb_reg_write(mem_wb_reg_write),
+    .wb_rd_addr(mem_wb_rd_addr),
+    .forward_a(forward_a),
+    .forward_b(forward_b)
+);
 
 endmodule
