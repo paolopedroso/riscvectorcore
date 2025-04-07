@@ -26,24 +26,52 @@ module sdatamem #(
 );
 
 // Internal signals
-// Mem array
+// Mem array - byte addressable memory
 logic [7:0] memory [MEM_SIZE-1:0];
 
-// Read logic block
+// Debug output
+`ifdef SIMULATION
+    always @(posedge clk) begin
+        if (mem_write_i) begin
+            $display("MEMORY WRITE: Address=0x%h, Size=%0d, Data=0x%h",
+                    addr_i, mem_size_i, wdata_i);
+        end
+        if (mem_read_i) begin
+            $display("MEMORY READ: Address=0x%h, Size=%0d",
+                    addr_i, mem_size_i);
+        end
+    end
+`endif
+
+// Read logic block - fixed sign extension
 always_comb begin
     rdata_o = 32'b0;  // Default value
+    
     if (mem_read_i) begin
         case (mem_size_i)
-            2'b00: rdata_o = {{24{memory[addr_i][7]}}, // Byte
-                memory[addr_i]};
-            2'b01: rdata_o = {{16{memory[addr_i+1][7]}}, memory[addr_i+1], // Half word
-                memory[addr_i]};
-            2'b10, 2'b11: rdata_o = {memory[addr_i+3], memory[addr_i+2], // Word (Default from sdecoder)
-                memory[addr_i+1], memory[addr_i]};
+            2'b00: begin // Byte (8-bit)
+                // Properly sign-extend the byte
+                logic [7:0] byte_data = 8'b0; // Initialize to avoid latch
+                byte_data = memory[addr_i];
+                rdata_o = {{24{byte_data[7]}}, byte_data};
+            end
+            
+            2'b01: begin // Half word (16-bit)
+                // Properly sign-extend the halfword
+                logic [15:0] half_data = 16'b0; // Initialize to avoid latch
+                half_data = {memory[addr_i+1], memory[addr_i]};
+                rdata_o = {{16{half_data[15]}}, half_data};
+            end
+            
+            2'b10, 2'b11: begin // Word (32-bit)
+                rdata_o = {memory[addr_i+3], memory[addr_i+2], 
+                          memory[addr_i+1], memory[addr_i]};
+            end
         endcase
     end
 end
 
+// Write logic block
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         for (int i = 0; i < MEM_SIZE; i++) begin

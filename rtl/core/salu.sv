@@ -23,6 +23,7 @@ module salu #(
     output logic overflow_flag_o
 );
 
+// ALU operation codes
 localparam logic [3:0] 
     ADD   = 4'b0000,
     SUB   = 4'b0001,
@@ -41,23 +42,13 @@ localparam logic [3:0]
     BLTU  = 4'b1110,
     BGEU  = 4'b1111;
 
-logic [DATA_WIDTH-1:0] add_result;
-logic [DATA_WIDTH-1:0] sub_result;
-logic [DATA_WIDTH:0] add_overflow_check;
-logic [DATA_WIDTH:0] sub_overflow_check;
-
+// Internal signals
 logic [DATA_WIDTH-1:0] alu_res_d;
-logic zero_flag_d;
-logic negative_flag_d;
-logic overflow_flag_d;
+logic zero_flag_d, negative_flag_d, overflow_flag_d;
 
-assign add_result = rs1_data_i + rs2_data_i;
-assign sub_result = rs1_data_i - rs2_data_i;
-
-assign add_overflow_check = {1'b0, rs1_data_i} + {1'b0, rs2_data_i};
-assign sub_overflow_check = {1'b0, rs1_data_i} - {1'b0, rs2_data_i};
-
+// ALU combinational logic
 always_comb begin
+    // Default values
     alu_res_d = '0;
     zero_flag_d = 1'b0;
     negative_flag_d = 1'b0;
@@ -65,85 +56,148 @@ always_comb begin
 
     case (alu_op_in)
         ADD: begin
-            alu_res_d = add_result;
+            alu_res_d = rs1_data_i + rs2_data_i;
             overflow_flag_d = (rs1_data_i[DATA_WIDTH-1] == rs2_data_i[DATA_WIDTH-1]) &&
-                             (add_result[DATA_WIDTH-1] != rs1_data_i[DATA_WIDTH-1]);
+                              (alu_res_d[DATA_WIDTH-1] != rs1_data_i[DATA_WIDTH-1]);
+            `ifdef SIMULATION
+                $display("ALU ADD: 0x%h + 0x%h = 0x%h", rs1_data_i, rs2_data_i, alu_res_d);
+            `endif
         end
 
         SUB: begin
-            alu_res_d = sub_result;
+            alu_res_d = rs1_data_i - rs2_data_i;
             overflow_flag_d = (rs1_data_i[DATA_WIDTH-1] != rs2_data_i[DATA_WIDTH-1]) &&
-                             (sub_result[DATA_WIDTH-1] != rs1_data_i[DATA_WIDTH-1]);
+                              (alu_res_d[DATA_WIDTH-1] != rs1_data_i[DATA_WIDTH-1]);
+            `ifdef SIMULATION
+                $display("ALU SUB: 0x%h - 0x%h = 0x%h", rs1_data_i, rs2_data_i, alu_res_d);
+            `endif
         end
 
         SLL: begin
             alu_res_d = rs1_data_i << rs2_data_i[4:0];
+            `ifdef SIMULATION
+                $display("ALU SLL: 0x%h << 0x%h = 0x%h", rs1_data_i, rs2_data_i[4:0], alu_res_d);
+            `endif
         end
 
         SLT: begin
-            if (rs1_data_i[DATA_WIDTH-1] != rs2_data_i[DATA_WIDTH-1])
-                alu_res_d = rs1_data_i[DATA_WIDTH-1] ? 32'd1 : 32'd0;
-            else
-                alu_res_d = (rs1_data_i < rs2_data_i) ? 32'd1 : 32'd0;
+            alu_res_d = ($signed(rs1_data_i) < $signed(rs2_data_i)) ? 32'd1 : 32'd0;
+            `ifdef SIMULATION
+                $display("ALU SLT: 0x%h < 0x%h = %d", rs1_data_i, rs2_data_i, alu_res_d);
+            `endif
         end
 
         SLTU: begin
             alu_res_d = (rs1_data_i < rs2_data_i) ? 32'd1 : 32'd0;
+            `ifdef SIMULATION
+                $display("ALU SLTU: 0x%h < 0x%h = %d", rs1_data_i, rs2_data_i, alu_res_d);
+            `endif
         end
 
         XOR: begin
             alu_res_d = rs1_data_i ^ rs2_data_i;
+            `ifdef SIMULATION
+                $display("ALU XOR: 0x%h ^ 0x%h = 0x%h", rs1_data_i, rs2_data_i, alu_res_d);
+            `endif
         end
 
         SRL: begin
             alu_res_d = rs1_data_i >> rs2_data_i[4:0];
+            `ifdef SIMULATION
+                $display("ALU SRL: 0x%h >> 0x%h = 0x%h", rs1_data_i, rs2_data_i[4:0], alu_res_d);
+            `endif
         end
 
         SRA: begin
             alu_res_d = $signed(rs1_data_i) >>> rs2_data_i[4:0];
+            `ifdef SIMULATION
+                $display("ALU SRA: 0x%h >>> 0x%h = 0x%h", rs1_data_i, rs2_data_i[4:0], alu_res_d);
+            `endif
         end
 
         OR: begin
             alu_res_d = rs1_data_i | rs2_data_i;
+            `ifdef SIMULATION
+                $display("ALU OR: 0x%h | 0x%h = 0x%h", rs1_data_i, rs2_data_i, alu_res_d);
+            `endif
         end
 
         AND: begin
             alu_res_d = rs1_data_i & rs2_data_i;
+            `ifdef SIMULATION
+                $display("ALU AND: 0x%h & 0x%h = 0x%h", rs1_data_i, rs2_data_i, alu_res_d);
+            `endif
         end
 
         BEQ: begin
-            alu_res_d = sub_result;
-            zero_flag_d = (sub_result == 0);
+            alu_res_d = rs1_data_i - rs2_data_i;
+            zero_flag_d = (rs1_data_i == rs2_data_i);
+            `ifdef SIMULATION
+                $display("ALU BEQ: 0x%h == 0x%h = %d", rs1_data_i, rs2_data_i, zero_flag_d);
+            `endif
         end
 
         BNE: begin
-            alu_res_d = sub_result;
-            zero_flag_d = (sub_result != 0);
+            alu_res_d = rs1_data_i - rs2_data_i;
+            zero_flag_d = (rs1_data_i != rs2_data_i);
+            `ifdef SIMULATION
+                $display("ALU BNE: 0x%h != 0x%h = %d", rs1_data_i, rs2_data_i, zero_flag_d);
+            `endif
         end
 
-        BLT, BGE: begin
-            if (rs1_data_i[DATA_WIDTH-1] != rs2_data_i[DATA_WIDTH-1])
-                alu_res_d = rs1_data_i[DATA_WIDTH-1] ? 32'd1 : 32'd0;
-            else
-                alu_res_d = (rs1_data_i < rs2_data_i) ? 32'd1 : 32'd0;
+        BLT: begin
+            alu_res_d = ($signed(rs1_data_i) < $signed(rs2_data_i)) ? 32'd1 : 32'd0;
+            zero_flag_d = ($signed(rs1_data_i) < $signed(rs2_data_i));
+            `ifdef SIMULATION
+                $display("ALU BLT: 0x%h < 0x%h = %d", rs1_data_i, rs2_data_i, zero_flag_d);
+            `endif
         end
 
-        BLTU, BGEU: begin
+        BGE: begin
+            alu_res_d = ($signed(rs1_data_i) >= $signed(rs2_data_i)) ? 32'd1 : 32'd0;
+            zero_flag_d = ($signed(rs1_data_i) >= $signed(rs2_data_i));
+            `ifdef SIMULATION
+                $display("ALU BGE: 0x%h >= 0x%h = %d", rs1_data_i, rs2_data_i, zero_flag_d);
+            `endif
+        end
+
+        BLTU: begin
             alu_res_d = (rs1_data_i < rs2_data_i) ? 32'd1 : 32'd0;
+            zero_flag_d = (rs1_data_i < rs2_data_i);
+            `ifdef SIMULATION
+                $display("ALU BLTU: 0x%h < 0x%h = %d", rs1_data_i, rs2_data_i, zero_flag_d);
+            `endif
+        end
+
+        BGEU: begin
+            alu_res_d = (rs1_data_i >= rs2_data_i) ? 32'd1 : 32'd0;
+            zero_flag_d = (rs1_data_i >= rs2_data_i);
+            `ifdef SIMULATION
+                $display("ALU BGEU: 0x%h >= 0x%h = %d", rs1_data_i, rs2_data_i, zero_flag_d);
+            `endif
         end
 
         default: begin
             alu_res_d = '0;
+            `ifdef SIMULATION
+                $display("ALU: Unknown operation code: %b", alu_op_in);
+            `endif
         end
     endcase
 
-    zero_flag_d = (alu_res_d == 0);
+    // Calculate common flags for non-branch operations
     negative_flag_d = alu_res_d[DATA_WIDTH-1];
+    
+    // Only update zero_flag for non-branch operations
+    if (!(alu_op_in inside {BEQ, BNE, BLT, BGE, BLTU, BGEU})) begin
+        zero_flag_d = (alu_res_d == 0);
+    end
 end
 
-always_ff @(posedge clk) begin
+// Register outputs
+always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        alu_res_o <= 32'b0;
+        alu_res_o <= '0;
         zero_flag_o <= 1'b0;
         negative_flag_o <= 1'b0;
         overflow_flag_o <= 1'b0;
