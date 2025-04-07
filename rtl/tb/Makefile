@@ -14,7 +14,10 @@ TB_DIR = .
 VERILATOR = verilator
 VERILATOR_OPTS = --cc --exe --build -j 0 -Wall -Wno-fatal
 VERILATOR_OPTS += --trace  # Generate VCD trace
+VERILATOR_OPTS += --trace-max-array 1024  # Limit array size in trace
+VERILATOR_OPTS += --trace-max-width 256   # Limit signal width in trace
 VERILATOR_OPTS += -I$(RTL_DIR)  # Include path for RTL files
+VERILATOR_OPTS += -DSIMULATION  # Define SIMULATION for conditional code
 
 # C++ sources (in TB_DIR)
 CPP_SRCS = $(TB_DIR)/sim_main.cpp
@@ -27,7 +30,7 @@ SV_SRCS = $(RTL_DIR)/top.sv \
           $(RTL_DIR)/sdecode.sv \
           $(RTL_DIR)/sregfile.sv \
           $(RTL_DIR)/swbmux.sv \
-          $(RTL_DIR)/sinstr_mem.sv \
+          $(RTL_DIR)/instr_mem.sv \
           $(RTL_DIR)/shazard_detection.sv \
           $(RTL_DIR)/forwarding_unit.sv
 
