@@ -101,12 +101,11 @@ assign b_imm = {{19{instr_in[31]}},
 
 assign u_imm = {instr_in[31:12], 12'b0};
 
-assign j_imm = {{11{instr_in[31]}}, 
-                instr_in[31], 
-                instr_in[19:12], 
-                instr_in[20], 
-                instr_in[30:21], 
-                1'b0};
+assign j_imm = {{12{instr_in[31]}}, 
+               instr_in[19:12], 
+               instr_in[20], 
+               instr_in[30:21], 
+               1'b0};
 
 always_comb begin
     if (is_i_type)
@@ -140,6 +139,14 @@ always_comb begin
     if (instr_valid) begin
         case (opcode)
             7'b0110011: begin
+                `ifdef SIMULATION
+                 if (instr_valid && opcode == 7'b0110011 && funct3 == 3'b000 && !funct7[5]) begin
+                     $display("ADD INSTRUCTION DETECTED: rs1=x%0d, rs2=x%0d, rd=x%0d", 
+                             regs1, regs2, rd);
+                     $display("Control signals: reg_write=%b, imm_valid=%b, alu_op=0x%h", 
+                             reg_write_en_o, imm_valid_o, alu_op_o);
+                end
+                 `endif
                 reg_write_en_o = 1'b1;
                 uses_rs1_o = 1'b1;
                 uses_rs2_o = 1'b1;
@@ -229,10 +236,13 @@ always_comb begin
                 alu_op_o = 4'b0000;
             end
 
-            7'b1101111: begin
+            7'b1101111: begin  // JAL
                 reg_write_en_o = 1'b1;
                 jump_o = 1'b1;
-                result_src_o = 2'b10;
+                result_src_o = 2'b10;  // Select PC+4 for rd write
+                `ifdef SIMULATION
+                    $display("DECODE: JAL instruction detected, rd=x%0d, imm=0x%h", rd, j_imm);
+                `endif
             end
 
             7'b1100111: begin

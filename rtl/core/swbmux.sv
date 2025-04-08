@@ -18,10 +18,30 @@ module swbmux #(
 
 always_comb begin
     case (result_src_i)
-        2'b00: rd_data_o = alu_result;      // ALU result
-        2'b01: rd_data_o = mem_rdata;       // Memory load
-        2'b10: rd_data_o = pc_i + 4;      // PC+4 for jumps
-        default: rd_data_o = alu_result;
+        2'b00: begin
+            rd_data_o = alu_result;      // ALU result
+            `ifdef SIMULATION
+                $display("WBMUX: Selected ALU result: 0x%h", alu_result);
+            `endif
+        end
+        2'b01: begin
+            rd_data_o = mem_rdata;       // Memory load
+            `ifdef SIMULATION
+                $display("WBMUX: Selected Memory data: 0x%h", mem_rdata);
+            `endif
+        end
+        2'b10: begin
+            rd_data_o = pc_i + 4;      // PC+4 for jumps
+            `ifdef SIMULATION
+                $display("WBMUX: Selected PC+4: 0x%h", pc_i + 4);
+            `endif
+        end
+        default: begin
+            rd_data_o = alu_result;
+            `ifdef SIMULATION
+                $display("WBMUX: Default - Selected ALU result: 0x%h", alu_result);
+            `endif
+        end
     endcase
 end
 

@@ -13,6 +13,23 @@ module top #(
     input logic rst_n
 );
 
+// Define a maximum cycle count to prevent infinite loops
+localparam int MAX_CYCLES = 1000;  // Adjust as needed
+int cycle_count = 0;
+
+// Cycle counter to detect infinite loops
+`ifdef SIMULATION
+always @(posedge clk) begin
+    if (rst_n) begin
+        cycle_count <= cycle_count + 1;
+        if (cycle_count >= MAX_CYCLES) begin
+            $display("WARNING: Maximum cycle count (%0d) reached. Terminating simulation.", MAX_CYCLES);
+            $finish;
+        end
+    end
+end
+`endif
+
 // Internal signals
 // Program counter and instruction signals
 logic [DATA_WIDTH-1:0] pc_out;
@@ -117,8 +134,8 @@ assign pc_write = !stall_pipeline;
 // Debug signals
 `ifdef SIMULATION
     // Function to print instruction
-    function automatic void print_instr_info(input string stage, input logic [31:0] instr);
-        $display("%s Stage Instruction: 0x%h", stage, instr);
+    function automatic void print_instr_info(input string stage, input logic [31:0] instr_val);
+        $display("%s Stage Instruction: 0x%h", stage, instr_val);
     endfunction
 `endif
 
@@ -348,11 +365,17 @@ always_ff @(posedge clk or negedge rst_n) begin
         `ifdef SIMULATION
             if (ex_mem_mem_read)
                 $display("MEM/WB: Memory read data=0x%h from addr=0x%h", 
-                         mem_rdata, ex_mem_alu_result);
+                        mem_rdata, ex_mem_alu_result);
             else if (ex_mem_reg_write)
                 $display("MEM/WB: Writing back 0x%h to rd=x%0d", 
-                         (ex_mem_result_src == 2'b01) ? mem_rdata : ex_mem_alu_result,
-                         ex_mem_rd_addr);
+                        (ex_mem_result_src == 2'b01) ? mem_rdata : ex_mem_alu_result,
+                        ex_mem_rd_addr);
+                        
+            // Add your new debug code here
+            if (ex_mem_reg_write && ex_mem_rd_addr != 5'b0) begin
+                $display("PIPELINE: MEM/WB update - Setting mem_wb_reg_write=%b, mem_wb_rd_addr=x%0d, result_src=%b",
+                        ex_mem_reg_write, ex_mem_rd_addr, ex_mem_result_src);
+            end
         `endif
     end
 end
@@ -398,6 +421,31 @@ sdecode sdecode_inst (
     .uses_rs1_o(uses_rs1),
     .uses_rs2_o(uses_rs2)
 );
+
+// Debug signals for register file inputs
+`ifdef SIMULATION
+always @(posedge clk) begin
+    if (rst_n && mem_wb_reg_write && mem_wb_rd_addr != 5'b0) begin
+        $display("TOP: About to write to register x%0d, value=0x%h, reg_write_en=%b", 
+                 mem_wb_rd_addr, rd_data, mem_wb_reg_write);
+    end
+end
+`endif
+
+`ifdef SIMULATION
+// Enhanced jump tracking
+always @(posedge clk) begin
+    if (rst_n && if_id_instr[6:0] == 7'b1101111) begin  // JAL opcode
+        $display("JUMP TRACKING: JAL detected at PC=0x%h, instr=0x%h", if_id_pc, if_id_instr);
+        $display("JUMP TRACKING: Target should be PC=0x%h", if_id_pc + $signed({{12{if_id_instr[31]}}, if_id_instr[19:12], if_id_instr[20], if_id_instr[30:21], 1'b0}));
+    end
+    
+    if (rst_n && ex_mem_jump) begin
+        $display("JUMP TRACKING: Jump executing in MEM stage, PC=0x%h, target=0x%h", 
+                 ex_mem_pc, ex_mem_pc + ex_mem_imm);
+    end
+end
+`endif
 
 sregfile sregfile_inst (
     .clk(clk),
@@ -474,8 +522,26 @@ forwarding_unit forward_inst (
 
 `ifdef SIMULATION
 // Track statistics
-int cycle_count = 0;
 int instruction_count = 0;
+
+// Monitor key signals
+always @(posedge clk) begin
+    if (rst_n) begin
+        // Note: cycle_count increment is already handled in the earlier block
+        
+        // Monitor PC at reset
+        if (cycle_count <= 5) begin
+            $display("Cycle %0d: PC=0x%h", cycle_count, pc_out);
+        end
+        
+        // Monitor instruction execution
+        if (!stall_pipeline && if_id_instr != 32'h0) begin
+            instruction_count <= instruction_count + 1;
+            $display("Executed instruction %0d: 0x%h at PC=0x%h", 
+                     instruction_count, if_id_instr, if_id_pc);
+        end
+    end
+end
 
 // Monitor key signals
 always @(posedge clk) begin

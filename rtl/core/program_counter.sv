@@ -29,15 +29,8 @@ always_comb begin
         next_pc = pc_i + imm;
         
         `ifdef SIMULATION
-            $display("PC: Branch/Jump from 0x%h to 0x%h", pc_i, next_pc);
-        `endif
-    end
-    else if (!pc_write) begin
-        // When stalled, maintain current PC
-        next_pc = pc_out;
-        
-        `ifdef SIMULATION
-            $display("PC: Stalled at 0x%h", pc_out);
+            $display("PC: Branch/Jump from 0x%h to 0x%h (imm=0x%h, jmp=%b, branch=%b)", 
+                     pc_i, next_pc, imm, jmp_en, branch_en);
         `endif
     end
     else if (pc_i != pc_out) begin
@@ -56,19 +49,26 @@ always_comb begin
             $display("PC: Normal increment from 0x%h to 0x%h", pc_out, next_pc);
         `endif
     end
+    
+    // Add bounds checking to prevent runaway execution
+    if (next_pc > 32'h00001000 || next_pc[1:0] != 2'b00) begin
+        `ifdef SIMULATION
+            $display("WARNING: PC invalid (0x%h). Halting simulation.", next_pc);
+            $finish;
+        `endif
+        next_pc = pc_i;  // Hold the PC value
+    end
 end
 
-// Sequential PC update - CRITICAL FIX: Ensure PC resets to exactly 0
+// Sequential PC update
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        pc_out <= 32'h00000000;  // Force PC to start at absolute 0
-        `ifdef SIMULATION
-            $display("PC: Reset to 0x00000000");
-        `endif
+        pc_out <= 32'b0;
     end 
-    else begin
+    else if (pc_write) begin  // Only update PC when not stalled
         pc_out <= next_pc;
     end
+    // When pc_write is 0, PC holds its value (stall)
 end
 
 endmodule
