@@ -81,6 +81,11 @@ always_comb begin
                 2'b10, 2'b11: begin // Word (32-bit)
                     rdata_o = {memory[addr_i+3], memory[addr_i+2], 
                               memory[addr_i+1], memory[addr_i]};
+                    
+                    `ifdef SIMULATION
+                        $display("MEMORY: Reading word 0x%h from address 0x%h", 
+                                {memory[addr_i+3], memory[addr_i+2], memory[addr_i+1], memory[addr_i]}, addr_i);
+                    `endif
                 end
             endcase
         end

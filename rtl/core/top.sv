@@ -14,7 +14,7 @@ module top #(
 );
 
 // Define a maximum cycle count to prevent infinite loops
-localparam int MAX_CYCLES = 1000;  // Adjust as needed
+localparam int MAX_CYCLES = 2000;  // Adjust as needed
 int cycle_count = 0;
 
 // Cycle counter to detect infinite loops

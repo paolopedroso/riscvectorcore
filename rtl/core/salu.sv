@@ -1,5 +1,5 @@
 /*
- * Scalar ALU
+ * Enhanced Scalar ALU with Detailed Debug
  *
  * @copyright 2025 Paolo Pedroso <paoloapedroso@gmail.com>
  *
@@ -46,7 +46,7 @@ localparam logic [3:0]
 logic [DATA_WIDTH-1:0] alu_res_d;
 logic zero_flag_d, negative_flag_d, overflow_flag_d;
 
-// ALU combinational logic
+// ALU combinational logic with enhanced debug
 always_comb begin
     // Default values
     alu_res_d = '0;
@@ -54,13 +54,31 @@ always_comb begin
     negative_flag_d = 1'b0;
     overflow_flag_d = 1'b0;
 
+    // Enhanced debug: show byte-by-byte input values
+    `ifdef SIMULATION
+        $display("ALU INPUT: rs1_data_i = 0x%h (bytes: %h %h %h %h)", 
+                rs1_data_i, 
+                rs1_data_i[7:0], rs1_data_i[15:8], 
+                rs1_data_i[23:16], rs1_data_i[31:24]);
+        $display("ALU INPUT: rs2_data_i = 0x%h (bytes: %h %h %h %h)", 
+                rs2_data_i, 
+                rs2_data_i[7:0], rs2_data_i[15:8], 
+                rs2_data_i[23:16], rs2_data_i[31:24]);
+        $display("ALU INPUT: alu_op_in = %b", alu_op_in);
+    `endif
+
     case (alu_op_in)
         ADD: begin
             alu_res_d = rs1_data_i + rs2_data_i;
             overflow_flag_d = (rs1_data_i[DATA_WIDTH-1] == rs2_data_i[DATA_WIDTH-1]) &&
                               (alu_res_d[DATA_WIDTH-1] != rs1_data_i[DATA_WIDTH-1]);
             `ifdef SIMULATION
-                $display("ALU ADD: 0x%h + 0x%h = 0x%h", rs1_data_i, rs2_data_i, alu_res_d);
+                $display("ALU ADD: 0x%h + 0x%h = 0x%h (decimal: %0d + %0d = %0d)", 
+                        rs1_data_i, rs2_data_i, alu_res_d,
+                        $signed(rs1_data_i), $signed(rs2_data_i), $signed(alu_res_d));
+                $display("ALU ADD RESULT BYTES: %h %h %h %h", 
+                        alu_res_d[7:0], alu_res_d[15:8], 
+                        alu_res_d[23:16], alu_res_d[31:24]);
             `endif
         end
 
@@ -69,7 +87,9 @@ always_comb begin
             overflow_flag_d = (rs1_data_i[DATA_WIDTH-1] != rs2_data_i[DATA_WIDTH-1]) &&
                               (alu_res_d[DATA_WIDTH-1] != rs1_data_i[DATA_WIDTH-1]);
             `ifdef SIMULATION
-                $display("ALU SUB: 0x%h - 0x%h = 0x%h", rs1_data_i, rs2_data_i, alu_res_d);
+                $display("ALU SUB: 0x%h - 0x%h = 0x%h (decimal: %0d - %0d = %0d)", 
+                        rs1_data_i, rs2_data_i, alu_res_d,
+                        $signed(rs1_data_i), $signed(rs2_data_i), $signed(alu_res_d));
             `endif
         end
 
@@ -83,14 +103,17 @@ always_comb begin
         SLT: begin
             alu_res_d = ($signed(rs1_data_i) < $signed(rs2_data_i)) ? 32'd1 : 32'd0;
             `ifdef SIMULATION
-                $display("ALU SLT: 0x%h < 0x%h = %d", rs1_data_i, rs2_data_i, alu_res_d);
+                $display("ALU SLT: 0x%h < 0x%h = %d (signed: %0d < %0d)", 
+                        rs1_data_i, rs2_data_i, alu_res_d,
+                        $signed(rs1_data_i), $signed(rs2_data_i));
             `endif
         end
 
         SLTU: begin
             alu_res_d = (rs1_data_i < rs2_data_i) ? 32'd1 : 32'd0;
             `ifdef SIMULATION
-                $display("ALU SLTU: 0x%h < 0x%h = %d", rs1_data_i, rs2_data_i, alu_res_d);
+                $display("ALU SLTU: 0x%h < 0x%h = %d (unsigned)", 
+                        rs1_data_i, rs2_data_i, alu_res_d);
             `endif
         end
 
@@ -192,6 +215,16 @@ always_comb begin
     if (!(alu_op_in inside {BEQ, BNE, BLT, BGE, BLTU, BGEU})) begin
         zero_flag_d = (alu_res_d == 0);
     end
+    
+    // Enhanced debug: Show output values
+    `ifdef SIMULATION
+        $display("ALU OUTPUT: alu_res_d = 0x%h (bytes: %h %h %h %h)", 
+                alu_res_d,
+                alu_res_d[7:0], alu_res_d[15:8], 
+                alu_res_d[23:16], alu_res_d[31:24]);
+        $display("ALU FLAGS: zero=%b, negative=%b, overflow=%b", 
+                zero_flag_d, negative_flag_d, overflow_flag_d);
+    `endif
 end
 
 // Register outputs
@@ -206,6 +239,11 @@ always_ff @(posedge clk or negedge rst_n) begin
         zero_flag_o <= zero_flag_d;
         negative_flag_o <= negative_flag_d;
         overflow_flag_o <= overflow_flag_d;
+        
+        // Debug: Show registered output
+        `ifdef SIMULATION
+            $display("ALU REGISTERED: alu_res_o = 0x%h", alu_res_d);
+        `endif
     end
 end
 

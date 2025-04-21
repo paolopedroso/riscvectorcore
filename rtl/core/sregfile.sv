@@ -96,4 +96,17 @@ always @(negedge clk) begin
 end
 `endif
 
+// Enhanced debug for register file
+`ifdef SIMULATION
+    always @(posedge clk) begin
+        if (rst_n && reg_write_en_i && rd_addr_i != 5'b0) begin
+            $display("REGFILE WRITE: rd=x%0d, value=0x%h (hex format check)", 
+                    rd_addr_i, rd_data_i);
+            // Explicitly show each byte to check endianness
+            $display("REGFILE WRITE BYTES: byte[0]=0x%h, byte[1]=0x%h, byte[2]=0x%h, byte[3]=0x%h",
+                    rd_data_i[7:0], rd_data_i[15:8], rd_data_i[23:16], rd_data_i[31:24]);
+        end
+    end
+`endif
+
 endmodule
