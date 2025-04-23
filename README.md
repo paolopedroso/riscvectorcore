@@ -82,7 +82,6 @@ make run
 
 ## Current Limitations
 - 32-bit RISC-V Integer (RV32I) instruction set
-- No hardware multiplication/division
 - Basic pipeline with simple hazard handling
 - Limited memory and register file size
 
