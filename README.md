@@ -1,4 +1,4 @@
-# RISC-V Scalar Core Implementation
+# RISC-V Scalar Core Implementation (IN DEVELOPMENT)
 
 ## Project Overview
 This is a 32-bit RISC-V scalar processor core implemented in SystemVerilog, featuring a 5-stage pipeline design with comprehensive hazard detection and forwarding mechanisms.
@@ -113,3 +113,7 @@ Copyright 2025 Paolo Pedroso
     ├── bin2hex.py
     └── run_test.sh
 ```
+
+## ISSUES
+- Endianness issue
+- ALU issue (ADD)
