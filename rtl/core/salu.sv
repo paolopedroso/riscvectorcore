@@ -247,4 +247,58 @@ always_ff @(posedge clk or negedge rst_n) begin
     end
 end
 
+// Updated debug section
+`ifdef SIMULATION
+// Modified debug ALU inputs and operation details with byte breakdown
+always @(rs1_data_i or rs2_data_i or alu_op_in) begin
+    // Detailed input dump
+    $display("ALU INPUT: rs1_data_i = 0x%h (bytes=%02x %02x %02x %02x)", 
+             rs1_data_i, 
+             rs1_data_i[7:0], rs1_data_i[15:8], rs1_data_i[23:16], rs1_data_i[31:24]);
+    
+    $display("ALU INPUT: rs2_data_i = 0x%h (bytes=%02x %02x %02x %02x)", 
+             rs2_data_i,
+             rs2_data_i[7:0], rs2_data_i[15:8], rs2_data_i[23:16], rs2_data_i[31:24]);
+    
+    $display("ALU INPUT: alu_op_in = %b", alu_op_in);
+    
+    // Trace specific operations with detail
+    case (alu_op_in)
+        4'b0000: begin // ADD
+            logic [DATA_WIDTH-1:0] tmp_result;
+            tmp_result = rs1_data_i + rs2_data_i;
+            
+            $display("ALU ADD: 0x%h + 0x%h = 0x%h (decimal: %0d + %0d = %0d)",
+                     rs1_data_i, rs2_data_i, tmp_result,
+                     rs1_data_i, rs2_data_i, tmp_result);
+            
+            // Show byte-by-byte result
+            $display("ALU ADD RESULT BYTES: %02x %02x %02x %02x",
+                    tmp_result[7:0],
+                    tmp_result[15:8],
+                    tmp_result[23:16],
+                    tmp_result[31:24]);
+        end
+        // Add cases for other operations as needed
+    endcase
+end
+
+// Debug ALU output with byte breakdown
+always @(alu_res_d) begin
+    $display("ALU OUTPUT: alu_res_d = 0x%h (bytes=%02x %02x %02x %02x)", 
+             alu_res_d,
+             alu_res_d[7:0], alu_res_d[15:8], alu_res_d[23:16], alu_res_d[31:24]);
+    
+    $display("ALU FLAGS: zero=%b, negative=%b, overflow=%b",
+             zero_flag_d, negative_flag_d, overflow_flag_d);
+end
+
+// Debug registered ALU outputs
+always @(posedge clk) begin
+    if (rst_n) begin
+        $display("ALU REGISTERED: alu_res_o = 0x%h", alu_res_o);
+    end
+end
+`endif
+
 endmodule

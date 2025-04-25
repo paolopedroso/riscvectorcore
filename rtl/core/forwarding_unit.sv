@@ -101,4 +101,29 @@ always_comb begin
     `endif
 end
 
+`ifdef SIMULATION
+// Debug forwarding decisions
+always @(forward_a or forward_b) begin
+    if (forward_a != 2'b00) begin
+        case (forward_a)
+            2'b01: $display("FORWARDING: RS1 x%0d from WB stage (x%0d)", 
+                           ex_rs1_addr, wb_rd_addr);
+            2'b10: $display("FORWARDING: RS1 x%0d from MEM stage (x%0d)", 
+                           ex_rs1_addr, mem_rd_addr);
+            default: $display("FORWARDING: RS1 unknown forwarding %b", forward_a);
+        endcase
+    end
+    
+    if (forward_b != 2'b00) begin
+        case (forward_b)
+            2'b01: $display("FORWARDING: RS2 x%0d from WB stage (x%0d)", 
+                           ex_rs2_addr, wb_rd_addr);
+            2'b10: $display("FORWARDING: RS2 x%0d from MEM stage (x%0d)", 
+                           ex_rs2_addr, mem_rd_addr);
+            default: $display("FORWARDING: RS2 unknown forwarding %b", forward_b);
+        endcase
+    end
+end
+`endif
+
 endmodule
