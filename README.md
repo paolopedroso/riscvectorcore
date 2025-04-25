@@ -82,11 +82,11 @@ make run
 
 ## Current Limitations
 - 32-bit RISC-V Integer (RV32I) instruction set
-- No hardware multiplication/division
 - Basic pipeline with simple hazard handling
 - Limited memory and register file size
 
 ## Future Improvements
+- Currently extending the design to support RISC-V vector extensions (RVV) for improved parallel processing capabilities, with planned implementation of custom vector register file and vector execution units
 - Implement more advanced branch prediction
 - Add support for RV32M extension (multiplication/division)
 - Enhance hazard detection and forwarding
