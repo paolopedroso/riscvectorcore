@@ -3,6 +3,8 @@
 ## Project Overview
 This is a 32-bit RISC-V scalar processor core implemented in SystemVerilog, featuring a 5-stage pipeline design with comprehensive hazard detection and forwarding mechanisms.
 
+![image](https://github.com/user-attachments/assets/e3306ced-4278-407f-b094-05e0d705928a)
+
 ## Current Architecture
 ### Pipeline Stages
 - Instruction Fetch (IF)
