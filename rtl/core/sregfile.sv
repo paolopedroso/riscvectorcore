@@ -120,45 +120,30 @@ end
 
 // Register dump task for debugging
 task dump_registers;
-    int i;
-    logic [31:0] raw_value, corrected_value;
-    string reg_name;
-    
-    $display("REGFILE: ========== Register File Dump (Cycle %0d) ==========", cycle_count);
-    for (i = 0; i < 32; i++) begin
-        raw_value = register[i];
-        corrected_value = correct_endianness(raw_value);
-        
-        // Standard ABI register names
-        reg_name = get_reg_name(i);
-        
-        $display("  x%0d (%s): 0x%08x", i, reg_name, corrected_value);
-        $display("     RAW: 0x%08x (bytes: %02x %02x %02x %02x)", 
-                raw_value, 
-                raw_value[7:0], raw_value[15:8], raw_value[23:16], raw_value[31:24]);
-        $display("     CORRECTED: 0x%08x (bytes: %02x %02x %02x %02x)", 
-                corrected_value,
-                corrected_value[7:0], corrected_value[15:8], 
-                corrected_value[23:16], corrected_value[31:24]);
+    begin
+        $display("REGFILE: ========== Register File Dump (Cycle %0d) ==========", cycle_count);
+        for (int i = 0; i < 32; i++) begin
+            automatic string reg_name = get_reg_name(i);
+            
+            $display("  x%0d (%s): 0x%08x (bytes: %02x %02x %02x %02x)", 
+                     i, reg_name, 
+                     register[i], register[i][7:0], register[i][15:8], 
+                     register[i][23:16], register[i][31:24]);
+        end
+        $display("==================================================");
     end
-    $display("==================================================");
 endtask
 
-// Improved debug with endianness tracking
 `ifdef SIMULATION
-// For any register writes, check and report endianness issues
+// For any register writes, show memory layout
 always @(posedge clk) begin
     if (reg_write_i && (rd_addr_i != 0)) begin
-        logic [31:0] corrected = correct_endianness(rd_data_i);
-        if (rd_data_i != corrected) begin
-            $display("REGFILE ENDIANNESS NOTE: Writing to x%0d", rd_addr_i);
-            $display("  Original: 0x%08x (bytes: %02x %02x %02x %02x)", 
-                    rd_data_i,
-                    rd_data_i[7:0], rd_data_i[15:8], rd_data_i[23:16], rd_data_i[31:24]);
-            $display("  Swapped:  0x%08x (bytes: %02x %02x %02x %02x)", 
-                    corrected,
-                    corrected[7:0], corrected[15:8], corrected[23:16], corrected[31:24]);
-        end
+        // No need for "corrected" value - just show the native format
+        $display("REGFILE WRITE: x%0d (%s) = 0x%08x", 
+                rd_addr_i, get_reg_name(rd_addr_i), rd_data_i);
+        $display("  Memory layout (little-endian): %02x %02x %02x %02x", 
+                rd_data_i[7:0], rd_data_i[15:8], 
+                rd_data_i[23:16], rd_data_i[31:24]);
     end
 end
 `endif

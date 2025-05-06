@@ -34,8 +34,8 @@ logic [7:0] memory [MEM_SIZE-1:0];
 
 `ifdef SIMULATION
     // Declare temp variables at module level for debug displays
-    logic [31:0] debug_corrected;
     logic [31:0] debug_stored_word;
+    // Remove debug_corrected as it's misleading in this context
 `endif
 
 // Debug output (simplified to avoid duplicates)
@@ -47,13 +47,9 @@ logic [7:0] memory [MEM_SIZE-1:0];
             end else begin
                 $display("MEMORY WRITE: Address=0x%h, Size=%0d, Data=0x%h",
                         addr_i, mem_size_i, wdata_i);
-                $display("  Byte order (original): %02x %02x %02x %02x", 
+                $display("  Byte order (little-endian): %02x %02x %02x %02x", 
                         wdata_i[7:0], wdata_i[15:8], wdata_i[23:16], wdata_i[31:24]);
-                        
-                debug_corrected = {wdata_i[7:0], wdata_i[15:8], wdata_i[23:16], wdata_i[31:24]};
-                $display("  Byte order (corrected): %02x %02x %02x %02x", 
-                        debug_corrected[7:0], debug_corrected[15:8], 
-                        debug_corrected[23:16], debug_corrected[31:24]);
+                // Remove misleading "corrected" display that implies the original was wrong
             end
         end
     end
@@ -100,14 +96,29 @@ always_comb begin
                               memory[addr_i+1], memory[addr_i]};
                     
                     `ifdef SIMULATION
-                        $display("MEMORY READ WORD: addr=0x%h, data=%08x", addr_i, 
+                        // Basic read information
+                        $display("MEMORY READ WORD: addr=0x%h, data=0x%08x", addr_i, 
                                 {memory[addr_i+3], memory[addr_i+2], 
                                 memory[addr_i+1], memory[addr_i]});
-                        $display("  Byte order (raw): %02x %02x %02x %02x", 
-                                memory[addr_i], memory[addr_i+1], 
-                                memory[addr_i+2], memory[addr_i+3]);
-                        $display("  Byte order (returned): %02x %02x %02x %02x", 
-                                rdata_o[7:0], rdata_o[15:8], rdata_o[23:16], rdata_o[31:24]);
+                                
+                        // Detailed little-endian memory layout explanation
+                        $display("  Memory layout (RISC-V little-endian):");
+                        $display("    addr+0 (0x%h): 0x%02x (LSB, bits 7-0)", 
+                                addr_i, memory[addr_i]);
+                        $display("    addr+1 (0x%h): 0x%02x (bits 15-8)", 
+                                addr_i+1, memory[addr_i+1]);
+                        $display("    addr+2 (0x%h): 0x%02x (bits 23-16)", 
+                                addr_i+2, memory[addr_i+2]);
+                        $display("    addr+3 (0x%h): 0x%02x (MSB, bits 31-24)", 
+                                addr_i+3, memory[addr_i+3]);
+                                
+                        // Show final register value
+                        $display("  Final register value: 0x%08x", rdata_o);
+                        
+                        // Verification to ensure correctness
+                        if (rdata_o != {memory[addr_i+3], memory[addr_i+2], memory[addr_i+1], memory[addr_i]}) begin
+                            $display("  ERROR: Register value doesn't match memory construction!");
+                        end
                     `endif
                 end
             endcase
@@ -180,13 +191,9 @@ always @(posedge clk) begin
         
         // Check if the stored word matches the expected value
         if (debug_stored_word != wdata_i) begin
-            $display("  ENDIANNESS WARNING: Stored word 0x%08x doesn't match input 0x%08x", 
+            $display("  ERROR: Stored word 0x%08x doesn't match input 0x%08x", 
                     debug_stored_word, wdata_i);
-            
-            // Show corrected version
-            debug_corrected = {debug_stored_word[7:0], debug_stored_word[15:8], 
-                              debug_stored_word[23:16], debug_stored_word[31:24]};
-            $display("  Endian-corrected: 0x%08x", debug_corrected);
+            // Remove misleading "Endian-corrected" display
         end
     end
 end

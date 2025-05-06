@@ -117,5 +117,4 @@ Copyright 2025 Paolo Pedroso
 ```
 
 ## ISSUES
-- Endianness issue
 - ALU issue (ADD)

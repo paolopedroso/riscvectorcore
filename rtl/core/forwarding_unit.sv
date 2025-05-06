@@ -1,11 +1,3 @@
-/*
- * Enhanced Forwarding Unit with Debug
- *
- * @copyright 2025 Paolo Pedroso <paoloapedroso@gmail.com>
- *
- * @license Apache 2.0
- */
-
 module forwarding_unit #(
     parameter int DATA_WIDTH = 32
 ) (
@@ -53,11 +45,6 @@ always_comb begin
                 $display("FORWARDING: WB instr=0x%h, EX instr=0x%h", wb_instr, ex_instr);
             `endif
         end
-        else begin
-            `ifdef SIMULATION
-                $display("FORWARDING: No forward for RS1 x%0d", ex_rs1_addr);
-            `endif
-        end
     end
     
     // RS2 forwarding logic
@@ -80,50 +67,7 @@ always_comb begin
                 $display("FORWARDING: WB instr=0x%h, EX instr=0x%h", wb_instr, ex_instr);
             `endif
         end
-        else begin
-            `ifdef SIMULATION
-                $display("FORWARDING: No forward for RS2 x%0d", ex_rs2_addr);
-            `endif
-        end
-    end
-    
-    // Enhanced debug for ALU ADD instruction
-    `ifdef SIMULATION
-        if (ex_instr == 32'h002081b3) begin // add x3, x1, x2
-            $display("ADD INSTRUCTION DEBUG ==============================");
-            $display("  forward_a=%b, forward_b=%b", forward_a, forward_b);
-            $display("  ex_rs1_addr=%d, ex_rs2_addr=%d", ex_rs1_addr, ex_rs2_addr);
-            $display("  mem_rd_addr=%d, wb_rd_addr=%d", mem_rd_addr, wb_rd_addr);
-            $display("  mem_reg_write=%b, wb_reg_write=%b", mem_reg_write, wb_reg_write);
-            $display("  rs1 should be x1, rs2 should be x2");
-            $display("====================================================");
-        end
-    `endif
-end
-
-`ifdef SIMULATION
-// Debug forwarding decisions
-always @(forward_a or forward_b) begin
-    if (forward_a != 2'b00) begin
-        case (forward_a)
-            2'b01: $display("FORWARDING: RS1 x%0d from WB stage (x%0d)", 
-                           ex_rs1_addr, wb_rd_addr);
-            2'b10: $display("FORWARDING: RS1 x%0d from MEM stage (x%0d)", 
-                           ex_rs1_addr, mem_rd_addr);
-            default: $display("FORWARDING: RS1 unknown forwarding %b", forward_a);
-        endcase
-    end
-    
-    if (forward_b != 2'b00) begin
-        case (forward_b)
-            2'b01: $display("FORWARDING: RS2 x%0d from WB stage (x%0d)", 
-                           ex_rs2_addr, wb_rd_addr);
-            2'b10: $display("FORWARDING: RS2 x%0d from MEM stage (x%0d)", 
-                           ex_rs2_addr, mem_rd_addr);
-            default: $display("FORWARDING: RS2 unknown forwarding %b", forward_b);
-        endcase
     end
 end
-`endif
 
 endmodule

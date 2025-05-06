@@ -617,19 +617,15 @@ end
 
 task display_endianness_comparison;
     int i;
-    logic [31:0] raw, corrected;
+    logic [31:0] raw;
     
-    $display("\n=== Register Endianness Comparison ===");
+    $display("\n=== Register Values (Native RISC-V Little-Endian) ===");
     for (i = 1; i < 32; i++) begin
-        // Changed 'registers' to 'register'
         raw = sregfile_inst.register[i];
-        corrected = {raw[7:0], raw[15:8], raw[23:16], raw[31:24]};
-        $display("x%0d: RAW=0x%08x  CORRECTED=0x%08x", i, raw, corrected);
+        $display("  x%0d = 0x%08h (Bytes: %02x %02x %02x %02x)", 
+                 i, raw, 
+                 raw[7:0], raw[15:8], raw[23:16], raw[31:24]);
     end
-    
-    $display("\n=== Summary of Executed Instructions ===");
-    $display("Simulation completed at time: %0t", $time);
-    $display("Total cycles executed: %0d", cycle_count);
 endtask
 
 // Add this block before endmodule
