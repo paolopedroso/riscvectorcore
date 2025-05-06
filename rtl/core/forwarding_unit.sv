@@ -1,3 +1,11 @@
+/*
+ * Forwarding Unit for RISC-V Processor
+ *
+ * @copyright 2025 Paolo Pedroso <paoloapedroso@gmail.com>
+ *
+ * @license Apache 2.0
+ */
+
 module forwarding_unit #(
     parameter int DATA_WIDTH = 32
 ) (

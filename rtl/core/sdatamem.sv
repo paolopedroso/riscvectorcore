@@ -1,5 +1,5 @@
 /*
- * Data Memory
+ * Data Memory - Fixed version
  *
  * @copyright 2025 Paolo Pedroso <paoloapedroso@gmail.com>
  *
@@ -29,30 +29,14 @@ module sdatamem #(
 // Mem array - byte addressable memory
 logic [7:0] memory [MEM_SIZE-1:0];
 
-// These functions cause syntax errors in Verilator - simpler to remove them and use inline conversions
-// Instead of using functions, we'll implement the conversions directly where needed
-
+// Debug memory status
 `ifdef SIMULATION
-    // Declare temp variables at module level for debug displays
-    logic [31:0] debug_stored_word;
-    // Remove debug_corrected as it's misleading in this context
-`endif
-
-// Debug output (simplified to avoid duplicates)
-`ifdef SIMULATION
-    always @(posedge clk) begin
-        if (mem_write_i) begin
-            if (addr_i >= MEM_SIZE - 3) begin
-                $display("ERROR: MEMORY WRITE OUT OF BOUNDS: Address=0x%h", addr_i);
-            end else begin
-                $display("MEMORY WRITE: Address=0x%h, Size=%0d, Data=0x%h",
-                        addr_i, mem_size_i, wdata_i);
-                $display("  Byte order (little-endian): %02x %02x %02x %02x", 
-                        wdata_i[7:0], wdata_i[15:8], wdata_i[23:16], wdata_i[31:24]);
-                // Remove misleading "corrected" display that implies the original was wrong
-            end
-        end
-    end
+    function void print_mem_status(input [31:0] addr);
+        $display("MEMORY STATUS: Memory[%0d:%0d] = %02x %02x %02x %02x",
+                addr+3, addr,
+                memory[addr], memory[addr+1], 
+                memory[addr+2], memory[addr+3]);
+    endfunction
 `endif
 
 // Read logic with endianness correction
@@ -70,23 +54,19 @@ always_comb begin
             case (mem_size_i)
                 2'b00: begin // Byte (8-bit)
                     // Properly sign-extend the byte
-                    logic [7:0] byte_data;
-                    byte_data = memory[addr_i];
-                    rdata_o = {{24{byte_data[7]}}, byte_data};
+                    rdata_o = {{24{memory[addr_i][7]}}, memory[addr_i]};
                     
                     `ifdef SIMULATION
-                        $display("MEMORY READ BYTE: addr=0x%h, data=%02x", addr_i, byte_data);
+                        $display("MEMORY READ BYTE: addr=0x%h, data=%02x", addr_i, memory[addr_i]);
                     `endif
                 end
                 
                 2'b01: begin // Half word (16-bit)
                     // Properly sign-extend the halfword with correct byte order (little-endian)
-                    logic [15:0] half_data;
-                    half_data = {memory[addr_i+1], memory[addr_i]};
-                    rdata_o = {{16{half_data[15]}}, half_data};
+                    rdata_o = {{16{memory[addr_i+1][7]}}, memory[addr_i+1], memory[addr_i]};
                     
                     `ifdef SIMULATION
-                        $display("MEMORY READ HALFWORD: addr=0x%h, data=%04x", addr_i, half_data);
+                        $display("MEMORY READ HALFWORD: addr=0x%h, data=%04x", addr_i, {memory[addr_i+1], memory[addr_i]});
                     `endif
                 end
                 
@@ -114,11 +94,7 @@ always_comb begin
                                 
                         // Show final register value
                         $display("  Final register value: 0x%08x", rdata_o);
-                        
-                        // Verification to ensure correctness
-                        if (rdata_o != {memory[addr_i+3], memory[addr_i+2], memory[addr_i+1], memory[addr_i]}) begin
-                            $display("  ERROR: Register value doesn't match memory construction!");
-                        end
+                        print_mem_status(addr_i);
                     `endif
                 end
             endcase
@@ -146,6 +122,7 @@ always_ff @(posedge clk or negedge rst_n) begin
                     memory[addr_i] <= wdata_i[7:0];
                     `ifdef SIMULATION
                         $display("MEMORY WRITE BYTE: addr=0x%h, data=%02x", addr_i, wdata_i[7:0]);
+                        print_mem_status(addr_i);
                     `endif
                 end
                 
@@ -154,6 +131,7 @@ always_ff @(posedge clk or negedge rst_n) begin
                     memory[addr_i+1] <= wdata_i[15:8];  // MSB second
                     `ifdef SIMULATION
                         $display("MEMORY WRITE HALFWORD: addr=0x%h, data=%04x", addr_i, wdata_i[15:0]);
+                        print_mem_status(addr_i);
                     `endif
                 end
                 
@@ -163,9 +141,10 @@ always_ff @(posedge clk or negedge rst_n) begin
                     memory[addr_i+2] <= wdata_i[23:16];  // ...
                     memory[addr_i+3] <= wdata_i[31:24];  // MSB last
                     `ifdef SIMULATION
-                        $display("MEMORY WRITE WORD: addr=0x%h, data=%08x", addr_i, wdata_i);
+                        $display("MEMORY WRITE WORD: addr=0x%h, data=0x%08x", addr_i, wdata_i);
                         $display("  Writing bytes: %02x %02x %02x %02x", 
                                 wdata_i[7:0], wdata_i[15:8], wdata_i[23:16], wdata_i[31:24]);
+                        print_mem_status(addr_i);
                     `endif
                 end
             endcase
@@ -175,25 +154,27 @@ end
 
 // Verification mechanism to check memory contents after each write
 `ifdef SIMULATION
-// Memory writes with byte-level verification
+// Memory debugging
 always @(posedge clk) begin
     if (mem_write_i && mem_size_i == 2'b10 && addr_i < MEM_SIZE - 3) begin
+        
         // Verify memory contents after write
-        $display("  Memory after write: mem[%0d:%0d] = %02x %02x %02x %02x",
+        $display("MEMORY CONTENTS after write at addr=0x%h:", addr_i);
+        $display("  Memory[%0d:%0d] = %02x %02x %02x %02x",
                 addr_i+3, addr_i,
                 memory[addr_i], memory[addr_i+1], 
                 memory[addr_i+2], memory[addr_i+3]);
                 
         // Reconstruct the word to verify correctness
-        debug_stored_word = {memory[addr_i+3], memory[addr_i+2], 
-                             memory[addr_i+1], memory[addr_i]};
-        $display("  Reconstructed word: 0x%08x", debug_stored_word);
+        $display("  Reconstructed word: 0x%08x", 
+                {memory[addr_i+3], memory[addr_i+2], 
+                 memory[addr_i+1], memory[addr_i]});
         
         // Check if the stored word matches the expected value
-        if (debug_stored_word != wdata_i) begin
+        if ({memory[addr_i+3], memory[addr_i+2], memory[addr_i+1], memory[addr_i]} != wdata_i) begin
             $display("  ERROR: Stored word 0x%08x doesn't match input 0x%08x", 
-                    debug_stored_word, wdata_i);
-            // Remove misleading "Endian-corrected" display
+                    {memory[addr_i+3], memory[addr_i+2], memory[addr_i+1], memory[addr_i]}, 
+                    wdata_i);
         end
     end
 end

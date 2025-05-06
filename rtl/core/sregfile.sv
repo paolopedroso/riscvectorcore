@@ -123,7 +123,7 @@ task dump_registers;
     begin
         $display("REGFILE: ========== Register File Dump (Cycle %0d) ==========", cycle_count);
         for (int i = 0; i < 32; i++) begin
-            automatic string reg_name = get_reg_name(i);
+            automatic string reg_name = get_reg_name(5'(i));
             
             $display("  x%0d (%s): 0x%08x (bytes: %02x %02x %02x %02x)", 
                      i, reg_name, 

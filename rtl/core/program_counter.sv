@@ -1,5 +1,5 @@
 /*
- * Program Counter
+ * Program Counter - Fixed Version
  *
  * @copyright 2025 Paolo Pedroso <paoloapedroso@gmail.com>
  *
@@ -7,7 +7,8 @@
  */
 
 module program_counter #(
-    parameter int DATA_WIDTH = 32
+    parameter int DATA_WIDTH = 32,
+    parameter int MAX_PC = 32'h00000100  // Limit PC to reasonable program space
 ) (
     input logic clk,
     input logic rst_n,
@@ -51,12 +52,14 @@ always_comb begin
     end
     
     // Add bounds checking to prevent runaway execution
-    if (next_pc > 32'h00001000 || next_pc[1:0] != 2'b00) begin
+    if ((next_pc > MAX_PC) || (next_pc[1:0] != 2'b00)) begin
         `ifdef SIMULATION
-            $display("WARNING: PC invalid (0x%h). Halting simulation.", next_pc);
-            $finish;
+            $display("WARNING: PC invalid (0x%h). Program continuing but PC limited.", next_pc);
+            // Don't finish here - let EBREAK or other checks handle termination
         `endif
-        next_pc = pc_i;  // Hold the PC value
+        
+        // Instead of halting, keep PC within valid range
+        next_pc = pc_out;  // Hold the PC value
     end
 end
 

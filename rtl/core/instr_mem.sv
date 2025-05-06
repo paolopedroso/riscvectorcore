@@ -1,5 +1,5 @@
 /*
- * Instruction Memory
+ * Instruction Memory - Fixed version
  *
  * @copyright 2025 Paolo Pedroso <paoloapedroso@gmail.com>
  *
@@ -33,7 +33,7 @@ module instr_mem #(
         `ifdef SIMULATION
             $display("IMEM: Reading from address 0x%h, mem_index=%0d, instruction=0x%h", 
                      addr_i, mem_index, imem[mem_index]);
-            if (addr_i > 32'h00001000) begin
+            if (addr_i > 32'h00000100) begin
                 $display("WARNING: PC is outside expected program range! addr=0x%h", addr_i);
             end
         `endif
@@ -49,7 +49,8 @@ module instr_mem #(
         end
     end
 
-// Initialize memory with a small test program
+// Initialize memory with the correct test program
+// Just ONE initialization block to avoid conflicts
 initial begin
     for (int i = 0; i < MEM_SIZE; i++) begin
         imem[i] = 32'h0;
@@ -69,7 +70,7 @@ initial begin
     imem[10] = 32'h00300533;  // add x10, x0, x3   # x10 = 3
     imem[11] = 32'h00200593;  // addi x11, x0, 2   # x11 = 2
     imem[12] = 32'h00400613;  // addi x12, x0, 4   # x12 = 4
-    imem[13] = 32'h0000006f;  // jal x0, 0        # Infinite loop to current PC (safer than branch)
+    imem[13] = 32'h00100073;  // EBREAK instruction to properly end simulation
     
     `ifdef SIMULATION
         $display("Instruction memory initialized with test program");

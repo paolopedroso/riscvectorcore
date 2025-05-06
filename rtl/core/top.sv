@@ -1,5 +1,5 @@
 /*
- * 32-bit RISC-V Vector Core
+ * 32-bit RISC-V Vector Core - Fixed Version
  *
  * @copyright 2025 Paolo Pedroso <paoloapedroso@gmail.com>
  *
@@ -7,7 +7,8 @@
  */
 
 module top #(
-    parameter int DATA_WIDTH = 32
+    parameter int DATA_WIDTH = 32,
+    parameter int MAX_PC = 32'h00000100  // Limit PC to reasonable program space
 ) (
     input logic clk,
     input logic rst_n
@@ -28,7 +29,7 @@ always @(posedge clk) begin
             sregfile_inst.dump_registers();
             display_endianness_comparison();
             $finish;
-            end
+        end
     end
 end
 `endif
@@ -51,6 +52,17 @@ always @(posedge clk) begin
                      id_ex_rs1_addr, id_ex_rs1_data, 
                      id_ex_rs2_addr, id_ex_rs2_data,
                      id_ex_rd_addr);
+        end
+        
+        // Track memory operations
+        if (ex_mem_mem_write) begin
+            $display("MEMORY WRITE OPERATION: addr=0x%h, data=0x%h, size=%0d", 
+                    ex_mem_alu_result, ex_mem_rs2_data, ex_mem_mem_size);
+        end
+        
+        if (ex_mem_mem_read) begin
+            $display("MEMORY READ OPERATION: addr=0x%h, size=%0d", 
+                    ex_mem_alu_result, ex_mem_mem_size);
         end
         
         // Track when ADD instruction moves to EX/MEM stage
@@ -186,7 +198,7 @@ assign pc_write = !stall_pipeline;
 // Debug signals
 `ifdef SIMULATION
     // Function to print instruction
-    function automatic void print_instr_info(input string stage, input logic [31:0] instr_val);
+    function void print_instr_info(input string stage, input logic [31:0] instr_val);
         $display("%s Stage Instruction: 0x%h", stage, instr_val);
     endfunction
 `endif
@@ -595,22 +607,11 @@ always @(posedge clk) begin
     end
 end
 
-// Monitor key signals
+// Enhanced PC range checking
 always @(posedge clk) begin
-    if (rst_n) begin
-        cycle_count <= cycle_count + 1;
-        
-        // Monitor PC at reset
-        if (cycle_count <= 5) begin
-            $display("Cycle %0d: PC=0x%h", cycle_count, pc_out);
-        end
-        
-        // Monitor instruction execution
-        if (!stall_pipeline && if_id_instr != 32'h0) begin
-            instruction_count <= instruction_count + 1;
-            $display("Executed instruction %0d: 0x%h at PC=0x%h", 
-                     instruction_count, if_id_instr, if_id_pc);
-        end
+    if (rst_n && pc_out > MAX_PC) begin
+        $display("WARNING: PC (0x%h) is beyond expected program range", pc_out);
+        $display("This may indicate an execution error or jump to invalid memory");
     end
 end
 `endif
@@ -629,7 +630,7 @@ task display_endianness_comparison;
 endtask
 
 // Add this block before endmodule
-// Infinite loop detection logic
+// Improved infinite loop detection logic - reduce threshold from 50 to 20 cycles
 `ifdef SIMULATION
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -640,7 +641,7 @@ always_ff @(posedge clk or negedge rst_n) begin
         // Check if we're executing the same instruction repeatedly
         if (pc_out == last_pc) begin
             // Increment counter if we've been at the same PC
-            if (same_pc_counter < 10'd50) begin  // Allow 50 cycles before detection
+            if (same_pc_counter < 10'd20) begin  // Reduced from 50 to 20 cycles before detection
                 same_pc_counter <= same_pc_counter + 1;
             end else if (!detected_infinite_loop) begin
                 // Check the opcode to see if this is likely an infinite loop
@@ -666,6 +667,51 @@ always_ff @(posedge clk or negedge rst_n) begin
         end
         
         last_pc <= pc_out;
+    end
+end
+`endif
+
+// EBREAK/ECALL detection at multiple pipeline stages
+`ifdef SIMULATION
+always @(posedge clk) begin
+    int fd;
+
+    if (rst_n) begin
+        // Check at IF/ID stage
+        if (if_id_instr == 32'h00100073) begin // EBREAK
+            $display("\n==== EBREAK DETECTED at IF/ID stage (PC=0x%h) ====", if_id_pc);
+            
+            // Create register dump file for verification
+            fd = $fopen("register_dump.txt", "w");
+            
+            if (fd != 0) begin
+                for (int i = 0; i < 32; i = i + 1) begin
+                    $fdisplay(fd, "x%0d=%0d", i, sregfile_inst.register[i]);
+                end
+                $fclose(fd);
+                $display("Register dump created: register_dump.txt");
+            end else begin
+                $display("Error: Could not create register dump file");
+            end
+            
+            sregfile_inst.dump_registers();
+            $finish;
+        end
+        
+        // Check at ID/EX stage (in case it was missed in IF/ID)
+        if (id_ex_instr == 32'h00100073) begin // EBREAK
+            $display("\n==== EBREAK DETECTED at ID/EX stage (PC=0x%h) ====", id_ex_pc);
+            sregfile_inst.dump_registers();
+            $finish;
+        end
+        
+        // Also check for ECALL (sometimes used as alternative exit)
+        if (if_id_instr == 32'h00000073 || id_ex_instr == 32'h00000073) begin
+            $display("\n==== ECALL DETECTED (PC=0x%h) ====", 
+                    (if_id_instr == 32'h00000073) ? if_id_pc : id_ex_pc);
+            sregfile_inst.dump_registers();
+            $finish;
+        end
     end
 end
 `endif

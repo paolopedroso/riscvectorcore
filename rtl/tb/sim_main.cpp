@@ -48,7 +48,10 @@
          // Direct access to register array
          uint32_t value = top->rootp->top__DOT__sregfile_inst__DOT__register[i];
          
-         // Write to file
+         // Write to file in the format expected by analyze_vcd.py
+         reg_file << "x" << i << "=" << std::dec << value << std::endl;
+         
+         // Also write human-readable format
          reg_file << "register x" << i << " = " << std::dec << value;
          if (i < reg_names.size()) {
              reg_file << " (" << reg_names[i] << ")";
@@ -252,6 +255,8 @@
          case 0x73: // System
              if ((instr & 0xFFFFFFFF) == 0x00100073)
                  result = "EBREAK";
+             else if ((instr & 0xFFFFFFFF) == 0x00000073)
+                 result = "ECALL";
              else
                  result = "SYSTEM";
              break;
@@ -431,10 +436,59 @@
                  // Track register changes every cycle
                  print_register_changes(top, prev_regs);
                  
-                 // Check for EBREAK instruction
-                 if (instr == 0x00100073) { // EBREAK opcode
-                     printf("EBREAK instruction detected at PC=0x%08x - Ending simulation\n", current_pc);
+                 // Check for EBREAK/ECALL instructions
+                 if (instr == 0x00100073 || instr == 0x00000073) { 
+                     const char* instr_name = (instr == 0x00100073) ? "EBREAK" : "ECALL";
+                     printf("\n==== %s INSTRUCTION DETECTED at PC=0x%08x ====\n", instr_name, current_pc);
+                     printf("Terminating simulation normally\n");
                      ebreak_detected = true;
+                     
+                     // Dump final register state before exiting
+                     printf("\n=== Final Register Values on %s ===\n", instr_name);
+                     std::ofstream regDump("register_dump.txt");
+                     
+                     if (regDump.is_open()) {
+                         // Write both formats - human readable for debugging and simple format for verification
+                         for (int i = 0; i < 32; i++) {
+                             uint32_t value = top->rootp->top__DOT__sregfile_inst__DOT__register[i];
+                             
+                             // Format for analyze_vcd.py
+                             regDump << "x" << i << "=" << std::dec << value << std::endl;
+                             
+                             // Also write the detailed format for human debugging
+                             regDump << "register x" << i << " = " << std::dec << value;
+                             if (i < reg_names.size()) {
+                                 regDump << " (" << reg_names[i] << ")";
+                             }
+                             regDump << std::endl;
+                         }
+                         regDump.close();
+                         printf("Register dump created: register_dump.txt\n");
+                     } else {
+                         printf("Error: Could not create register dump file\n");
+                     }
+                     
+                     // Dump memory contents
+                     std::ofstream memDump("memory_dump.txt");
+                     dump_memory_contents(top, memDump);
+                     memDump.close();
+                     
+                     // Print one final register summary to console
+                     printf("\n=== Register Values Summary (RISC-V Little-Endian) ===\n");
+                     for (int i = 1; i <= 12; i++) {
+                         uint32_t value = top->rootp->top__DOT__sregfile_inst__DOT__register[i];
+                         
+                         printf("x%d (%5s): 0x%08x (decimal: %d)\n", 
+                                i, i < reg_names.size() ? reg_names[i].c_str() : "----", 
+                                value, value);
+                         
+                         printf("   Bytes (little-endian): ");
+                         print_bytes_little_endian(value);
+                         printf("\n");
+                     }
+                     
+                     // Exit simulation
+                     program_completed = true;
                  }
                  
                  // Monitor specific instructions
@@ -483,32 +537,34 @@
      debug_log << "\n=== Final Pipeline State ===\n";
      dump_pipeline_state(top, debug_log);
      
-     // Record register state at end of simulation
-     printf("\n=== Final Register Values (RISC-V Little-Endian) ===\n");
-     std::ofstream regDump("register_dump.txt");
-     print_registers(top, regDump);  // This function is correctly implemented
-     regDump.close();
+     // Record register state at end of simulation if not already done
+     if (!ebreak_detected) {
+         printf("\n=== Final Register Values (RISC-V Little-Endian) ===\n");
+         std::ofstream regDump("register_dump.txt");
+         print_registers(top, regDump);  // This function is correctly implemented
+         regDump.close();
  
-     // Print summary of executed instructions
-     printf("\n=== Summary of Executed Instructions ===\n");
-     printf("Simulation completed at time: %lu\n", main_time);
-     printf("Total cycles executed: %u\n", total_cycles);
+         // Print summary of executed instructions
+         printf("\n=== Summary of Executed Instructions ===\n");
+         printf("Simulation completed at time: %lu\n", main_time);
+         printf("Total cycles executed: %u\n", total_cycles);
  
-     // Optional simplified summary with proper formatting - CORRECTLY DISPLAYED
-     printf("\n=== Register Values Summary (RISC-V Little-Endian) ===\n");
-     for (int i = 1; i <= 12; i++) {  // Print only registers x1-x12 for brevity
-         // Direct access without endianness correction
-         uint32_t value = top->rootp->top__DOT__sregfile_inst__DOT__register[i];
-         
-         // Display using printf for consistent formatting across platforms
-         printf("x%d (%5s): 0x%08x (decimal: %d)\n", 
-                i, i < reg_names.size() ? reg_names[i].c_str() : "----", 
-                value, value);
-         
-         // Print bytes in correct little-endian order
-         printf("   Bytes (little-endian): ");
-         print_bytes_little_endian(value);
-         printf("\n");
+         // Optional simplified summary with proper formatting - CORRECTLY DISPLAYED
+         printf("\n=== Register Values Summary (RISC-V Little-Endian) ===\n");
+         for (int i = 1; i <= 12; i++) {  // Print only registers x1-x12 for brevity
+             // Direct access without endianness correction
+             uint32_t value = top->rootp->top__DOT__sregfile_inst__DOT__register[i];
+             
+             // Display using printf for consistent formatting across platforms
+             printf("x%d (%5s): 0x%08x (decimal: %d)\n", 
+                    i, i < reg_names.size() ? reg_names[i].c_str() : "----", 
+                    value, value);
+             
+             // Print bytes in correct little-endian order
+             printf("   Bytes (little-endian): ");
+             print_bytes_little_endian(value);
+             printf("\n");
+         }
      }
  
      top->final();
@@ -526,3 +582,4 @@
      
      return 0;
  }
+ 
