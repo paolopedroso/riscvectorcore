@@ -115,4 +115,4 @@ Copyright 2025 Paolo Pedroso
 ```
 
 ## ISSUES
-- ALU issue (ADD)
+- save/load instructions
