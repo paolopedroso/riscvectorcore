@@ -1,5 +1,5 @@
 /*
- * Forwarding Unit for RISC-V Processor
+ * Forwarding Unit for RISC-V Processor - Fixed Version
  *
  * @copyright 2025 Paolo Pedroso <paoloapedroso@gmail.com>
  *
@@ -27,13 +27,14 @@ module forwarding_unit #(
     output logic [1:0] forward_b
 );
 
-// Combinational logic for forwarding
+wire is_store = (ex_instr[6:0] == 7'b0100011);
+
 always_comb begin
     // Default: no forwarding
     forward_a = 2'b00;
     forward_b = 2'b00;
     
-    // RS1 forwarding logic
+    // RS1 forwarding logic with detailed debugging
     if (ex_rs1_addr != 5'b0) begin  // Don't forward for register x0
         // Check MEM stage forwarding (higher priority)
         if (mem_reg_write && (mem_rd_addr == ex_rs1_addr)) begin
@@ -55,25 +56,46 @@ always_comb begin
         end
     end
     
-    // RS2 forwarding logic
+    // RS2 forwarding logic - IMPROVED LOGIC FOR STORES
+    
     if (ex_rs2_addr != 5'b0) begin  // Don't forward for register x0
-        // Check MEM stage forwarding (higher priority)
-        if (mem_reg_write && (mem_rd_addr == ex_rs2_addr)) begin
-            forward_b = 2'b10;
-            `ifdef SIMULATION
-                $display("FORWARDING: RS2 x%0d from MEM stage (x%0d), mem_reg_write=%b", 
-                         ex_rs2_addr, mem_rd_addr, mem_reg_write);
-                $display("FORWARDING: MEM instr=0x%h, EX instr=0x%h", mem_instr, ex_instr);
-            `endif
+        // Special handling for store instructions
+        if (is_store) begin
+            // Check for ANY register write to the store's rs2 register
+            // Higher priority forwarding from MEM stage
+            if (mem_reg_write && (mem_rd_addr == ex_rs2_addr)) begin
+                forward_b = 2'b10;
+                `ifdef SIMULATION
+                    $display("STORE FORWARDING ACTIVE: Using x%0d from MEM stage", ex_rs2_addr);
+                `endif
+            end
+            else if (wb_reg_write && (wb_rd_addr == ex_rs2_addr)) begin
+                forward_b = 2'b01;
+                `ifdef SIMULATION
+                    $display("STORE FORWARDING ACTIVE: Using x%0d from WB stage", ex_rs2_addr);
+                `endif
+            end
         end
-        // Check WB stage forwarding if MEM stage doesn't match
-        else if (wb_reg_write && (wb_rd_addr == ex_rs2_addr)) begin
-            forward_b = 2'b01;
-            `ifdef SIMULATION
-                $display("FORWARDING: RS2 x%0d from WB stage (x%0d), wb_reg_write=%b", 
-                         ex_rs2_addr, wb_rd_addr, wb_reg_write);
-                $display("FORWARDING: WB instr=0x%h, EX instr=0x%h", wb_instr, ex_instr);
-            `endif
+        // Standard forwarding for regular instructions
+        else begin
+            // Check MEM stage forwarding (higher priority)
+            if (mem_reg_write && (mem_rd_addr == ex_rs2_addr)) begin
+                forward_b = 2'b10;
+                `ifdef SIMULATION
+                    $display("FORWARDING: RS2 x%0d from MEM stage (x%0d), mem_reg_write=%b", 
+                             ex_rs2_addr, mem_rd_addr, mem_reg_write);
+                    $display("FORWARDING: MEM instr=0x%h, EX instr=0x%h", mem_instr, ex_instr);
+                `endif
+            end
+            // Check WB stage forwarding if MEM stage doesn't match
+            else if (wb_reg_write && (wb_rd_addr == ex_rs2_addr)) begin
+                forward_b = 2'b01;
+                `ifdef SIMULATION
+                    $display("FORWARDING: RS2 x%0d from WB stage (x%0d), wb_reg_write=%b", 
+                             ex_rs2_addr, wb_rd_addr, wb_reg_write);
+                    $display("FORWARDING: WB instr=0x%h, EX instr=0x%h", wb_instr, ex_instr);
+                `endif
+            end
         end
     end
 end

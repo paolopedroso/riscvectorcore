@@ -266,19 +266,53 @@ always_comb begin
         alu_input_b = id_ex_imm;
         `ifdef SIMULATION
             $display("ALU_B: Using immediate: 0x%h", id_ex_imm);
+            
+            // Decode instruction type for better debugging - without local variables
+            if (id_ex_instr[6:0] == 7'b0010011) begin
+                if (id_ex_instr[14:12] == 3'b001)
+                    $display("SLLI instruction: Using imm = 0x%h as shift amount", id_ex_imm);
+                else
+                    $display("I-type instruction: Using imm = 0x%h", id_ex_imm);
+            end
         `endif
     end else begin
         alu_input_b = alu_rs2_input;
         `ifdef SIMULATION
             $display("ALU_B: Using rs2 data (possibly forwarded): x%0d = 0x%h", id_ex_rs2_addr, alu_rs2_input);
+            
+            // Decode instruction type for better debugging - without local variables
+            if (id_ex_instr[6:0] == 7'b0110011) begin
+                if (id_ex_instr[14:12] == 3'b000 && id_ex_instr[31:25] == 7'b0000000)
+                    $display("ADD instruction: Using rs2 = 0x%h as second operand", alu_rs2_input);
+                else
+                    $display("R-type instruction: Using rs2 = 0x%h", alu_rs2_input);
+            end
+        `endif
+    end
+    
+    // Final safety check to ensure ADD instruction has correct operands
+    if (id_ex_instr == 32'h002081b3) begin
+        // This is the ADD x3, x1, x2 instruction
+        // Verify and print ALU inputs for debugging
+        `ifdef SIMULATION
+            $display("ADD INSTRUCTION VERIFICATION:");
+            $display("  rs1=x1 (addr=%0d), value=0x%h", id_ex_rs1_addr, alu_input_a);
+            $display("  rs2=x2 (addr=%0d), value=0x%h", id_ex_rs2_addr, alu_input_b);
+            $display("  rd=x3 (addr=%0d)", id_ex_rd_addr);
+            
+            if (id_ex_rs1_addr != 5'd1 || id_ex_rs2_addr != 5'd2 || id_ex_rd_addr != 5'd3) begin
+                $display("WARNING: Register addresses for ADD instruction may be incorrect!");
+                $display("Expected: rs1=x1, rs2=x2, rd=x3");
+                $display("Actual: rs1=x%0d, rs2=x%0d, rd=x%0d", id_ex_rs1_addr, id_ex_rs2_addr, id_ex_rd_addr);
+            end
         `endif
     end
 end
 
-// Pipeline registers update
+// Pipeline registers update - The fixed version
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        // Reset all pipeline registers
+        // Reset all pipeline registers (no changes needed here)
         if_id_pc <= '0;
         if_id_instr <= '0;
         
@@ -344,33 +378,46 @@ always_ff @(posedge clk or negedge rst_n) begin
             `ifdef SIMULATION
                 $display("IF/ID: Stalled (keeping current values)");
             `endif
+            // Keep existing values during stall - no update needed
         end
         
-        // Update ID/EX stage
+        // Update ID/EX stage - FIX: Be explicit about what happens during stalls
         if (stall_pipeline) begin
-            // Insert bubble on stall
+            // Insert bubble on stall - explicitly set all control signals to inactive
             id_ex_reg_write <= 1'b0;
             id_ex_mem_read <= 1'b0;
             id_ex_mem_write <= 1'b0;
             id_ex_branch <= 1'b0;
             id_ex_jump <= 1'b0;
             id_ex_instr <= 32'h00000013;  // NOP
+            // FIX: Keep register addresses valid but set control signals to 0
+            // This ensures correct forwarding but prevents updates
             `ifdef SIMULATION
                 $display("ID/EX: Inserting NOP due to stall");
             `endif
         end else if (pc_src) begin
-            // Insert bubble on branch/jump taken
-            id_ex_reg_write <= 1'b0;
-            id_ex_mem_read <= 1'b0;
+            // Insert bubble on branch/jump taken - FIX: explicitly set all control signals
+            id_ex_pc <= if_id_pc;         // Keep the PC value
+            id_ex_rs1_data <= rs1_data;   // Keep the register data
+            id_ex_rs2_data <= rs2_data;
+            id_ex_rs1_addr <= rs1_addr;   // Keep the register addresses
+            id_ex_rs2_addr <= rs2_addr;
+            id_ex_rd_addr <= 5'b0;        // FIX: Set destination to x0 (no write)
+            id_ex_reg_write <= 1'b0;      // Disable register write
+            id_ex_mem_read <= 1'b0;       // Disable memory operations
             id_ex_mem_write <= 1'b0;
-            id_ex_branch <= 1'b0;
+            id_ex_branch <= 1'b0;         // Disable branch/jump
             id_ex_jump <= 1'b0;
-            id_ex_instr <= 32'h00000013;  // NOP
+            id_ex_result_src <= 2'b00;    // Default to ALU result
+            id_ex_alu_op <= 4'b0000;      // Default to ADD operation
+            id_ex_imm <= '0;              // Zero immediate
+            id_ex_imm_valid <= 1'b0;      // Disable immediate
+            id_ex_instr <= 32'h00000013;  // NOP instruction
             `ifdef SIMULATION
                 $display("ID/EX: Inserting NOP due to branch/jump");
             `endif
         end else begin
-            // Normal operation
+            // Normal operation - keep the same logic
             id_ex_pc <= if_id_pc;
             id_ex_rs1_data <= rs1_data;
             id_ex_rs2_data <= rs2_data;
@@ -394,12 +441,34 @@ always_ff @(posedge clk or negedge rst_n) begin
                          rs1_addr, rs1_data, rs2_addr, rs2_data, rd_addr);
                 if (imm_valid) $display("ID/EX: imm=0x%h", imm_value);
             `endif
+
+            // Add debug to track values through pipeline
+            `ifdef SIMULATION
+                if (if_id_instr == 32'h002081b3) begin  // ADD x3, x1, x2
+                    $display("ID/EX PIPELINE: ADD instruction entering EX stage");
+                    $display("  rs1_addr=x%0d, rs2_addr=x%0d, rd_addr=x%0d", 
+                            rs1_addr, rs2_addr, rd_addr);
+                    $display("  rs1_data=0x%h, rs2_data=0x%h", rs1_data, rs2_data);
+                end
+            `endif
         end
         
-        // Update EX/MEM stage - Always update these registers
+        // Update EX/MEM stage - FIX: Be consistent with the forwarded data
+        // Update EX/MEM stage
         ex_mem_pc <= id_ex_pc;
         ex_mem_alu_result <= alu_result;
-        ex_mem_rs2_data <= alu_rs2_input; // Use forwarded value
+
+        // FIX: Use the correct forwarded value for rs2_data (for memory writes)
+        // Without using conditional expressions which might cause syntax errors
+        if (forward_b == 2'b00) begin
+            ex_mem_rs2_data <= id_ex_rs2_data;
+        end else if (forward_b == 2'b01) begin
+            ex_mem_rs2_data <= rd_data;
+        end else if (forward_b == 2'b10) begin
+            ex_mem_rs2_data <= ex_mem_alu_result;
+        end else begin
+            ex_mem_rs2_data <= id_ex_rs2_data;
+        end
         ex_mem_imm <= id_ex_imm;
         ex_mem_rd_addr <= id_ex_rd_addr;
         ex_mem_reg_write <= id_ex_reg_write;
@@ -418,7 +487,7 @@ always_ff @(posedge clk or negedge rst_n) begin
                 $display("EX/MEM: Branch condition=%b", zero_flag);
         `endif
         
-        // Update MEM/WB stage - Always update these registers
+        // Update MEM/WB stage
         mem_wb_alu_result <= ex_mem_alu_result;
         mem_wb_mem_data <= mem_rdata;
         mem_wb_pc <= ex_mem_pc;
@@ -435,7 +504,7 @@ always_ff @(posedge clk or negedge rst_n) begin
                         (ex_mem_result_src == 2'b01) ? mem_rdata : ex_mem_alu_result,
                         ex_mem_rd_addr);
                         
-            // Add your new debug code here
+            // Debug code for register write tracking
             if (ex_mem_reg_write && ex_mem_rd_addr != 5'b0) begin
                 $display("PIPELINE: MEM/WB update - Setting mem_wb_reg_write=%b, mem_wb_rd_addr=x%0d, result_src=%b",
                         ex_mem_reg_write, ex_mem_rd_addr, ex_mem_result_src);
@@ -714,6 +783,120 @@ always @(posedge clk) begin
         end
     end
 end
+`endif
+
+// Add this check in the Monitor section of top.sv to verify register values
+`ifdef SIMULATION
+// Register value verification for initial instructions
+always @(posedge clk) begin
+    if (rst_n) begin
+        // After the first two instructions should have executed (using cycle_count instead)
+        if (cycle_count == 3) begin  // Changed from total_cycles to cycle_count
+            $display("REGISTER VERIFICATION AT CYCLE 3:");
+            $display("  x1 should be 1, actual value: 0x%h", sregfile_inst.register[1]);
+            $display("  x2 should be 2, actual value: 0x%h", sregfile_inst.register[2]);
+        end
+        
+        // Before ADD instruction executes (at PC=0x8)
+        if (pc_out == 32'h00000008) begin
+            $display("REGISTER CHECK BEFORE ADD: x1=0x%h, x2=0x%h", 
+                     sregfile_inst.register[1], 
+                     sregfile_inst.register[2]);
+        end
+    end
+end
+`endif
+
+`ifdef SIMULATION
+// Memory operation tracking
+always @(posedge clk) begin
+    if (rst_n) begin
+        // Track the store instruction (SW x3, 0(x0))
+        if (if_id_instr == 32'h00302023) begin
+            $display("STORE INSTRUCTION DETECTED: SW x3, 0(x0)");
+            $display("  Current value of x3: 0x%h", sregfile_inst.register[3]);
+        end
+        
+        // Track the load instruction (LW x6, 0(x0))
+        if (if_id_instr == 32'h00002303) begin
+            $display("LOAD INSTRUCTION DETECTED: LW x6, 0(x0)");
+            $display("  Memory at address 0: bytes %02x %02x %02x %02x",
+                     sdatamem_inst.memory[0], 
+                     sdatamem_inst.memory[1],
+                     sdatamem_inst.memory[2],
+                     sdatamem_inst.memory[3]);
+        end
+        
+        // Track when memory writes actually happen
+        if (ex_mem_mem_write && ex_mem_mem_size == 2'b10) begin
+            $display("MEMORY WRITE EXECUTING: addr=0x%h, data=0x%h",
+                     ex_mem_alu_result, ex_mem_rs2_data);
+        end
+    end
+end
+`endif
+
+`ifdef SIMULATION
+// Critical instruction tracking
+always @(posedge clk) begin
+    if (rst_n) begin
+        static int instr_count = 0;
+        
+        // Track instruction execution by PC value
+        if (pc_out == 32'h0) begin
+            $display("\n=== Starting Program Execution ===\n");
+            instr_count = 0;
+        end
+        
+        // Increment counter only when a new instruction is fetched
+        if (if_id_instr != 32'h0 && !stall_pipeline) begin
+            instr_count++;
+            
+            case (instr_count)
+                1: $display("Instruction 1: ADDI x1, x0, 1 - Setting x1=1");
+                2: $display("Instruction 2: ADDI x2, x0, 2 - Setting x2=2");
+                3: begin
+                    $display("Instruction 3: ADD x3, x1, x2 - Should set x3=3");
+                    $display("  Register values - x1=%0d, x2=%0d", 
+                             sregfile_inst.register[1], sregfile_inst.register[2]);
+                    $display("  Correctly decoded: rs1=x%0d, rs2=x%0d, rd=x%0d", 
+                             rs1_addr, rs2_addr, rd_addr);
+                end
+            endcase
+        end
+    end
+end
+`endif
+
+`ifdef SIMULATION
+always @(posedge clk) begin
+    if (rst_n && id_ex_instr[6:0] == 7'b0100011) begin  // Store opcode
+        $display("STORE INSTRUCTION IN EX STAGE: instr=0x%h, rs2_addr=x%0d, rs2_data=0x%h",
+                 id_ex_instr, id_ex_rs2_addr, id_ex_rs2_data);
+        if (forward_b != 2'b00) begin
+            $display("STORE FORWARDING ACTIVE: forward_b=%b", forward_b);
+        end
+    end
+end
+`endif
+
+`ifdef SIMULATION
+always @(posedge clk) begin
+    if (rst_n && ex_mem_mem_write) begin
+        $display("MEMORY STORE EXECUTION: addr=0x%h, data=0x%h", 
+                 ex_mem_alu_result, ex_mem_rs2_data);
+        if (ex_mem_alu_result == 0) begin
+            $display("  MEMORY STORE TO ADDRESS 0: Storing value 0x%h", ex_mem_rs2_data);
+            if (ex_mem_rs2_data != 3) begin
+                $display("  WARNING: Expected to store value 3 (register x3), but storing 0x%h",
+                         ex_mem_rs2_data);
+            end else begin
+                $display("  SUCCESS: Correctly storing value 3 from register x3");
+            end
+        end
+    end
+end
+
 `endif
 
 endmodule

@@ -256,18 +256,46 @@ always_comb begin
             end
         endcase
     end
+        // Read register addresses directly from the instruction
+    rs1_addr_o = instr_in[19:15];  // Extract rs1 (bits 19:15)
+    rs2_addr_o = instr_in[24:20];  // Extract rs2 (bits 24:20)
+    rd_addr_o = instr_in[11:7];    // Extract rd (bits 11:7)
+    
+    // Add debug to verify correct extraction
+    `ifdef SIMULATION
+        if (instr_valid) begin
+            // Debug for ADD instruction specifically
+            if (instr_in == 32'h002081b3) begin  // ADD x3, x1, x2
+                $display("DECODE DEBUG: ADD instruction detected");
+                $display("  rs1=x%0d (bits 19:15 = 0x%h)", rs1_addr_o, instr_in[19:15]);
+                $display("  rs2=x%0d (bits 24:20 = 0x%h)", rs2_addr_o, instr_in[24:20]);
+                $display("  rd=x%0d (bits 11:7 = 0x%h)", rd_addr_o, instr_in[11:7]);
+                
+                // Verify bit fields explicitly
+                if (rs1_addr_o != 5'd1 || rs2_addr_o != 5'd2 || rd_addr_o != 5'd3) begin
+                    $display("ERROR: ADD instruction incorrectly decoded!");
+                    $display("Expected: rs1=x1, rs2=x2, rd=x3");
+                    $display("Actual: rs1=x%0d, rs2=x%0d, rd=x%0d", rs1_addr_o, rs2_addr_o, rd_addr_o);
+                    $display("Instruction: 0x%h", instr_in);
+                    $display("Bits 19:15 = 0b%5b", instr_in[19:15]);
+                    $display("Bits 24:20 = 0b%5b", instr_in[24:20]);
+                    $display("Bits 11:7 = 0b%5b", instr_in[11:7]);
+                end
+            end
+        end
+    `endif
 end
 
-always_ff @(posedge clk) begin
-    if (!rst_n) begin
-        rs1_addr_o <= 5'b0;
-        rs2_addr_o <= 5'b0;
-        rd_addr_o <= 5'b0;
-    end else begin
-        rs1_addr_o <= regs1;
-        rs2_addr_o <= regs2;
-        rd_addr_o <= rd;
-    end
-end
+// always_ff @(posedge clk) begin
+//     if (!rst_n) begin
+//         rs1_addr_o <= 5'b0;
+//         rs2_addr_o <= 5'b0;
+//         rd_addr_o <= 5'b0;
+//     end else begin
+//         rs1_addr_o <= regs1;
+//         rs2_addr_o <= regs2;
+//         rd_addr_o <= rd;
+//     end
+// end
 
 endmodule

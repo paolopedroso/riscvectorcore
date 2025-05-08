@@ -228,24 +228,29 @@ always_comb begin
 end
 
 // Register outputs
-always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        alu_res_o <= '0;
-        zero_flag_o <= 1'b0;
-        negative_flag_o <= 1'b0;
-        overflow_flag_o <= 1'b0;
-    end else begin
-        alu_res_o <= alu_res_d;
-        zero_flag_o <= zero_flag_d;
-        negative_flag_o <= negative_flag_d;
-        overflow_flag_o <= overflow_flag_d;
+// always_ff @(posedge clk or negedge rst_n) begin
+//     if (!rst_n) begin
+//         alu_res_o <= '0;
+//         zero_flag_o <= 1'b0;
+//         negative_flag_o <= 1'b0;
+//         overflow_flag_o <= 1'b0;
+//     end else begin
+//         alu_res_o <= alu_res_d;
+//         zero_flag_o <= zero_flag_d;
+//         negative_flag_o <= negative_flag_d;
+//         overflow_flag_o <= overflow_flag_d;
         
-        // Debug: Show registered output
-        `ifdef SIMULATION
-            $display("ALU REGISTERED: alu_res_o = 0x%h", alu_res_d);
-        `endif
-    end
-end
+//         // Debug: Show registered output
+//         `ifdef SIMULATION
+//             $display("ALU REGISTERED: alu_res_o = 0x%h", alu_res_d);
+//         `endif
+//     end
+// end
+
+assign alu_res_o = alu_res_d;
+assign zero_flag_o = zero_flag_d;
+assign negative_flag_o = negative_flag_d;
+assign overflow_flag_o = overflow_flag_d;
 
 `ifdef SIMULATION
 // Debug ALU output with byte breakdown

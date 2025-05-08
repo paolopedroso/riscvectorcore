@@ -44,6 +44,9 @@ always_comb begin
     rdata_o = 32'b0;  // Default value
     
     if (mem_read_i) begin
+        `ifdef SIMULATION
+            $display("MEMORY DEBUG: Reading from address 0x%h", addr_i);
+        `endif
         // Add bounds checking
         if (addr_i >= MEM_SIZE - 3) begin  // -3 to account for word access
             `ifdef SIMULATION
@@ -110,6 +113,24 @@ always_ff @(posedge clk or negedge rst_n) begin
         end
     end
     else if (mem_write_i) begin
+        `ifdef SIMULATION
+            $display("MEMORY STORE DEBUG: Writing to addr=0x%h, data=0x%h", 
+             addr_i, wdata_i);
+
+            $display("MEMORY DEBUG: Writing to address 0x%h, data=0x%h, size=%0d", 
+                     addr_i, wdata_i, mem_size_i);
+            
+            if (addr_i == 32'h0 && mem_size_i == 2'b10) begin
+                $display("MEMORY STORE TO ADDRESS 0: value=0x%h", wdata_i);
+                $display("  Expected value should be 3 (from register x3)");
+                
+                // Add extra verification
+                if (wdata_i != 32'h3) begin
+                    $display("  WARNING: Storing incorrect value to memory address 0!");
+                    $display("  This will affect the subsequent load to register x6");
+                end
+            end
+        `endif
         // Add bounds checking
         if (addr_i >= MEM_SIZE - 3) begin  // -3 to account for word access
             `ifdef SIMULATION
@@ -122,7 +143,6 @@ always_ff @(posedge clk or negedge rst_n) begin
                     memory[addr_i] <= wdata_i[7:0];
                     `ifdef SIMULATION
                         $display("MEMORY WRITE BYTE: addr=0x%h, data=%02x", addr_i, wdata_i[7:0]);
-                        print_mem_status(addr_i);
                     `endif
                 end
                 
@@ -131,7 +151,6 @@ always_ff @(posedge clk or negedge rst_n) begin
                     memory[addr_i+1] <= wdata_i[15:8];  // MSB second
                     `ifdef SIMULATION
                         $display("MEMORY WRITE HALFWORD: addr=0x%h, data=%04x", addr_i, wdata_i[15:0]);
-                        print_mem_status(addr_i);
                     `endif
                 end
                 
@@ -140,14 +159,24 @@ always_ff @(posedge clk or negedge rst_n) begin
                     memory[addr_i+1] <= wdata_i[15:8];   // ...
                     memory[addr_i+2] <= wdata_i[23:16];  // ...
                     memory[addr_i+3] <= wdata_i[31:24];  // MSB last
+                    
+                    // Add extra debug
                     `ifdef SIMULATION
                         $display("MEMORY WRITE WORD: addr=0x%h, data=0x%08x", addr_i, wdata_i);
                         $display("  Writing bytes: %02x %02x %02x %02x", 
                                 wdata_i[7:0], wdata_i[15:8], wdata_i[23:16], wdata_i[31:24]);
-                        print_mem_status(addr_i);
+                                
+                        // Add a more visible debug message
+                        $display("** MEMORY STORE: WORD 0x%h written to address 0x%h **", wdata_i, addr_i);
                     `endif
                 end
             endcase
+            
+            // Add this for extra validation after any write
+            `ifdef SIMULATION
+                $display("MEMORY POST-WRITE CHECK: Address 0x%h now contains bytes: %02x %02x %02x %02x",
+                        addr_i, memory[addr_i], memory[addr_i+1], memory[addr_i+2], memory[addr_i+3]);
+            `endif
         end
     end
 end

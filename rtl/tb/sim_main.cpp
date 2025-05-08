@@ -288,32 +288,32 @@
  }
  
  // Simple test showing little-endian byte ordering
- void run_endianness_test(Vtop* top) {
-     printf("\n======= ENDIANNESS TEST =======\n");
+//  void run_endianness_test(Vtop* top) {
+//      printf("\n======= ENDIANNESS TEST =======\n");
      
-     // Test with values that clearly show byte ordering
-     uint32_t test_value1 = 0x01020304;  // In memory: 04 03 02 01
-     uint32_t test_value2 = 0x05060708;  // In memory: 08 07 06 05
+//      // Test with values that clearly show byte ordering
+//      uint32_t test_value1 = 0x01020304;  // In memory: 04 03 02 01
+//      uint32_t test_value2 = 0x05060708;  // In memory: 08 07 06 05
      
-     printf("Test value 1: 0x%08x\n", test_value1);
-     printf("  Bytes (little-endian memory order): ");
-     print_bytes_little_endian(test_value1);
-     printf("\n");
+//      printf("Test value 1: 0x%08x\n", test_value1);
+//      printf("  Bytes (little-endian memory order): ");
+//      print_bytes_little_endian(test_value1);
+//      printf("\n");
      
-     printf("\nTest value 2: 0x%08x\n", test_value2);
-     printf("  Bytes (little-endian memory order): ");
-     print_bytes_little_endian(test_value2);
-     printf("\n");
+//      printf("\nTest value 2: 0x%08x\n", test_value2);
+//      printf("  Bytes (little-endian memory order): ");
+//      print_bytes_little_endian(test_value2);
+//      printf("\n");
      
-     // Verify result of addition
-     uint32_t expected_sum = test_value1 + test_value2;
-     printf("\nExpected sum: 0x%08x\n", expected_sum);
-     printf("  Bytes (little-endian memory order): ");
-     print_bytes_little_endian(expected_sum);
-     printf("\n");
+//      // Verify result of addition
+//      uint32_t expected_sum = test_value1 + test_value2;
+//      printf("\nExpected sum: 0x%08x\n", expected_sum);
+//      printf("  Bytes (little-endian memory order): ");
+//      print_bytes_little_endian(expected_sum);
+//      printf("\n");
      
-     printf("======= END ENDIANNESS TEST =======\n\n");
- }
+//      printf("======= END ENDIANNESS TEST =======\n\n");
+//  }
  
  int main(int argc, char** argv) {
      // Initialize variables and setup
@@ -372,7 +372,7 @@
      printf("Initial PC value: 0x%08x\n", top->rootp->top__DOT__pc_out);
      
      // Run endianness test
-     run_endianness_test(top);
+    //  run_endianness_test(top);
      
      // Examine instruction memory contents
      printf("Instruction memory contents:\n");
@@ -503,7 +503,7 @@
                      // Debug ALU operation
                      uint32_t alu_in1 = top->rootp->top__DOT__alu_input_a;
                      uint32_t alu_in2 = top->rootp->top__DOT__alu_input_b;
-                     uint32_t alu_out = top->rootp->top__DOT__alu_result;
+                     uint32_t alu_out = top->rootp->top__DOT__ex_mem_alu_result;
                      printf("ALU INPUTS: 0x%08x + 0x%08x = 0x%08x\n", alu_in1, alu_in2, alu_out);
                  }
                  
