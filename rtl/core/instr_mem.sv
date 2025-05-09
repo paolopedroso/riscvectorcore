@@ -70,8 +70,39 @@ initial begin
     imem[10] = 32'h00300533;  // add x10, x0, x3   # x10 = 3
     imem[11] = 32'h00200593;  // addi x11, x0, 2   # x11 = 2
     imem[12] = 32'h00400613;  // addi x12, x0, 4   # x12 = 4
-    imem[13] = 32'h00100073;  // EBREAK instruction to properly end simulation
+    // Extended test for store-load forwarding
+    imem[13] = 32'h00c62023; // sw x12, 0(x12)      # store x12(4) to address 4
+    imem[14] = 32'h00100693; // addi x13, x0, 1     # x13 = 1
+    imem[15] = 32'h00062703; // lw x14, 0(x12)      # load from address 4 to x14 (should be 4)
+    imem[16] = 32'h00170713; // addi x14, x14, 1    # x14 = 5
+    imem[17] = 32'h00e62223; // sw x14, 4(x12)      # store x14(5) to address 8
     
+    // Multiple store-load sequence with immediate usage
+    imem[18] = 32'h00862503; // lw x10, 8(x12)      # load from address 8 to x10 (should be 5)
+    imem[19] = 32'h00a10133; // add x2, x2, x10     # x2 = 2 + 5 = 7
+    imem[20] = 32'h00112023; // sw x1, 0(x2)        # store x1(1) to address 7
+    imem[21] = 32'h00012783; // lw x15, 0(x2)       # load from address 7 to x15 (should be 1)
+    
+    // Complex forwarding test - immediate store after compute
+    imem[22] = 32'h00178793; // addi x15, x15, 1    # x15 = 2
+    imem[23] = 32'h00f12223; // sw x15, 4(x2)       # store x15(2) to address 11
+    imem[24] = 32'h00412803; // lw x16, 4(x2)       # load from address 11 to x16 (should be 2)
+    
+    // Store-load-operate pattern test
+    imem[25] = 32'h01010813; // addi x16, x2, 16    # x16 = 7 + 16 = 23
+    imem[26] = 32'h01080023; // sb x16, 0(x16)      # store byte x16(23) to address 23
+    imem[27] = 32'h00080883; // lb x17, 0(x16)      # load byte from addr 23 to x17 (should be 23)
+    imem[28] = 32'h00188893; // addi x17, x17, 1    # x17 = 24
+    
+    // Final register consistency check
+    imem[29] = 32'h01100913; // addi x18, x0, 17    # x18 = 17
+    imem[30] = 32'h01200993; // addi x19, x0, 18    # x19 = 18
+    imem[31] = 32'h01300a13; // addi x20, x0, 19    # x20 = 19
+    imem[32] = 32'h01400a93; // addi x21, x0, 20    # x21 = 20
+    
+    // End program with EBREAK
+    imem[33] = 32'h00100073; // EBREAK instruction to properly end simulation    
+
     `ifdef SIMULATION
         $display("Instruction memory initialized with test program");
         for (int i = 0; i < 14; i++) begin

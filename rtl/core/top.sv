@@ -459,16 +459,24 @@ always_ff @(posedge clk or negedge rst_n) begin
         ex_mem_alu_result <= alu_result;
 
         // FIX: Use the correct forwarded value for rs2_data (for memory writes)
-        // Without using conditional expressions which might cause syntax errors
-        if (forward_b == 2'b00) begin
-            ex_mem_rs2_data <= id_ex_rs2_data;
-        end else if (forward_b == 2'b01) begin
-            ex_mem_rs2_data <= rd_data;
-        end else if (forward_b == 2'b10) begin
-            ex_mem_rs2_data <= ex_mem_alu_result;
+        // Updated logic for forwarding in store instructions
+        if (id_ex_mem_write) begin
+            // For store instructions, ensure forwarded data is used
+            if (forward_b == 2'b01) begin
+                // WB stage forwarding
+                ex_mem_rs2_data <= rd_data;
+            end else if (forward_b == 2'b10) begin
+                // MEM stage forwarding
+                ex_mem_rs2_data <= ex_mem_alu_result;
+            end else begin
+                // No forwarding
+                ex_mem_rs2_data <= id_ex_rs2_data;
+            end
         end else begin
+            // Normal case for non-store instructions
             ex_mem_rs2_data <= id_ex_rs2_data;
         end
+
         ex_mem_imm <= id_ex_imm;
         ex_mem_rd_addr <= id_ex_rd_addr;
         ex_mem_reg_write <= id_ex_reg_write;
@@ -480,6 +488,22 @@ always_ff @(posedge clk or negedge rst_n) begin
         ex_mem_branch <= id_ex_branch;
         ex_mem_jump <= id_ex_jump;
         ex_mem_instr <= id_ex_instr;
+
+        // Add extra debug for store instructions
+        `ifdef SIMULATION
+            if (id_ex_mem_write) begin
+                $display("STORE INSTRUCTION MOVING TO MEM STAGE:");
+                $display("  rs2_addr=x%0d, forwarded=%b, forward_sel=%b", 
+                        id_ex_rs2_addr, (forward_b != 2'b00), forward_b);
+                $display("  Original rs2_data=0x%h", id_ex_rs2_data);
+                case (forward_b)
+                    2'b01: $display("  Forwarded rs2_data from WB=0x%h", rd_data);
+                    2'b10: $display("  Forwarded rs2_data from MEM=0x%h", ex_mem_alu_result);
+                endcase
+                $display("  Final rs2_data to memory=0x%h", ex_mem_rs2_data);
+            end
+        `endif
+
         `ifdef SIMULATION
             if (id_ex_reg_write) 
                 $display("EX/MEM: ALU result=0x%h for rd=x%0d", alu_result, id_ex_rd_addr);
@@ -897,6 +921,67 @@ always @(posedge clk) begin
     end
 end
 
+`endif
+
+`ifdef SIMULATION
+// Add enhanced tracking for memory operations
+always @(posedge clk) begin
+    if (rst_n) begin
+        // Track store instructions specifically
+        if (ex_mem_mem_write) begin
+            $display("\nEXECUTING MEMORY STORE: addr=0x%h, data=0x%h", 
+                     ex_mem_alu_result, ex_mem_rs2_data);
+            
+            if (ex_mem_instr[6:0] == 7'b0100011) begin
+                // S-type instruction
+                logic [4:0] local_rs2_addr = ex_mem_instr[24:20];
+                $display("  STORE INSTRUCTION: Using rs2=x%0d (value=0x%h)", 
+                         local_rs2_addr, ex_mem_rs2_data);
+            end
+            
+            if (ex_mem_alu_result == 0) begin
+                $display("  CRITICAL STORE TO ADDRESS 0: val=0x%h", ex_mem_rs2_data);
+            end
+        end
+        
+        // Track load instructions specifically
+        if (ex_mem_mem_read) begin
+            $display("\nEXECUTING MEMORY LOAD: addr=0x%h", ex_mem_alu_result);
+            if (ex_mem_alu_result == 0) begin
+                $display("  CRITICAL LOAD FROM ADDRESS 0");
+                $display("  Memory contents: %02x %02x %02x %02x", 
+                         sdatamem_inst.memory[0], sdatamem_inst.memory[1],
+                         sdatamem_inst.memory[2], sdatamem_inst.memory[3]);
+            end
+        end
+    end
+end
+
+// Add verification for store-load sequence
+logic [31:0] address_0_contents;
+always @(posedge clk) begin
+    if (rst_n) begin
+        // Track changes to memory at address 0
+        address_0_contents = {sdatamem_inst.memory[3], sdatamem_inst.memory[2],
+                              sdatamem_inst.memory[1], sdatamem_inst.memory[0]};
+                             
+        // Verify content changes at address 0
+        if (ex_mem_mem_write && ex_mem_alu_result == 0) begin
+            $display("VERIFICATION: About to store 0x%h to address 0", ex_mem_rs2_data);
+        end
+        
+        // Check for loads by examining the result_src signal
+        // LW instruction typically uses result_src = 01
+        if (mem_wb_result_src == 2'b01 && mem_wb_alu_result == 0) begin
+            $display("VERIFICATION: Loaded 0x%h from address 0", mem_wb_mem_data);
+            if (mem_wb_mem_data == 3) begin
+                $display("VERIFICATION PASSED: Successfully loaded correct value (3) from address 0");
+            end else begin
+                $display("VERIFICATION FAILED: Expected to load 3, got 0x%h", mem_wb_mem_data);
+            end
+        end
+    end
+end
 `endif
 
 endmodule

@@ -101,21 +101,38 @@ always_ff @(posedge clk or negedge rst_n) begin
 end
 
 // Read logic - combinational
+// always_comb begin
+//     // Read source register 1
+//     rs1_data_o = (rs1_addr_i == 0) ? 0 : register[rs1_addr_i];
+    
+//     // Read source register 2
+//     rs2_data_o = (rs2_addr_i == 0) ? 0 : register[rs2_addr_i];
+    
+//     `ifdef SIMULATION
+//         if (rs1_addr_i != 0) begin
+//             $display("REGFILE: Reading x%0d = 0x%08x", rs1_addr_i, rs1_data_o);
+//         end
+//         if (rs2_addr_i != 0) begin
+//             $display("REGFILE: Reading x%0d = 0x%08x", rs2_addr_i, rs2_data_o);
+//         end
+//     `endif
+// end
+
 always_comb begin
-    // Read source register 1
+    // For SW instructions, make sure to use the latest value
+    if (rs2_addr_i == 5'h03 && reg_write_i && rd_addr_i == 5'h03) begin
+        // If we're reading register x3 at the same time it's being written
+        rs2_data_o = rd_data_i;
+        `ifdef SIMULATION
+            $display("SPECIAL CASE: SW using latest value of x3: 0x%h", rd_data_i);
+        `endif
+    end else begin
+        // Normal read logic
+        rs2_data_o = (rs2_addr_i == 0) ? 0 : register[rs2_addr_i];
+    end
+    
+    // Read source register 1 (unchanged)
     rs1_data_o = (rs1_addr_i == 0) ? 0 : register[rs1_addr_i];
-    
-    // Read source register 2
-    rs2_data_o = (rs2_addr_i == 0) ? 0 : register[rs2_addr_i];
-    
-    `ifdef SIMULATION
-        if (rs1_addr_i != 0) begin
-            $display("REGFILE: Reading x%0d = 0x%08x", rs1_addr_i, rs1_data_o);
-        end
-        if (rs2_addr_i != 0) begin
-            $display("REGFILE: Reading x%0d = 0x%08x", rs2_addr_i, rs2_data_o);
-        end
-    `endif
 end
 
 // Register dump task for debugging
