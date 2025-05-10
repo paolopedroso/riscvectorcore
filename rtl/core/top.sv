@@ -458,23 +458,20 @@ always_ff @(posedge clk or negedge rst_n) begin
         ex_mem_pc <= id_ex_pc;
         ex_mem_alu_result <= alu_result;
 
-        // FIX: Use the correct forwarded value for rs2_data (for memory writes)
-        // Updated logic for forwarding in store instructions
+        // FIX: Use proper forwarded value for memory store operations
+        // Update EX/MEM stage for store instructions
         if (id_ex_mem_write) begin
-            // For store instructions, ensure forwarded data is used
-            if (forward_b == 2'b01) begin
-                // WB stage forwarding
-                ex_mem_rs2_data <= rd_data;
-            end else if (forward_b == 2'b10) begin
-                // MEM stage forwarding
-                ex_mem_rs2_data <= ex_mem_alu_result;
-            end else begin
-                // No forwarding
-                ex_mem_rs2_data <= id_ex_rs2_data;
-            end
-        end else begin
-            // Normal case for non-store instructions
-            ex_mem_rs2_data <= id_ex_rs2_data;
+            case (forward_b)
+                2'b01: begin  // WB stage forwarding
+                    ex_mem_rs2_data <= rd_data;
+                end
+                2'b10: begin  // MEM stage forwarding
+                    ex_mem_rs2_data <= ex_mem_alu_result;
+                end
+                default: begin
+                    ex_mem_rs2_data <= id_ex_rs2_data;  // Use register value
+                end
+            endcase
         end
 
         ex_mem_imm <= id_ex_imm;
@@ -668,6 +665,8 @@ forwarding_unit forward_inst (
     .mem_rd_addr(ex_mem_rd_addr),
     .wb_reg_write(mem_wb_reg_write),
     .wb_rd_addr(mem_wb_rd_addr),
+    // Added regfile read data for additional checking
+    // .reg_rs2_data(sregfile_inst.register[id_ex_rs2_addr]),
     // Debug instruction tracking
     .ex_instr(id_ex_instr),
     .mem_instr(ex_mem_instr),

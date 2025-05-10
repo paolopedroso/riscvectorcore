@@ -118,21 +118,11 @@ end
 //     `endif
 // end
 
+// FIXED CODE:
 always_comb begin
-    // For SW instructions, make sure to use the latest value
-    if (rs2_addr_i == 5'h03 && reg_write_i && rd_addr_i == 5'h03) begin
-        // If we're reading register x3 at the same time it's being written
-        rs2_data_o = rd_data_i;
-        `ifdef SIMULATION
-            $display("SPECIAL CASE: SW using latest value of x3: 0x%h", rd_data_i);
-        `endif
-    end else begin
-        // Normal read logic
-        rs2_data_o = (rs2_addr_i == 0) ? 0 : register[rs2_addr_i];
-    end
-    
-    // Read source register 1 (unchanged)
+    // Normal read logic for both rs1 and rs2 - let forwarding unit handle special cases
     rs1_data_o = (rs1_addr_i == 0) ? 0 : register[rs1_addr_i];
+    rs2_data_o = (rs2_addr_i == 0) ? 0 : register[rs2_addr_i];
 end
 
 // Register dump task for debugging

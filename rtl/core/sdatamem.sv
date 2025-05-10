@@ -181,29 +181,50 @@ always_ff @(posedge clk or negedge rst_n) begin
     end
 end
 
-// Verification mechanism to check memory contents after each write
 `ifdef SIMULATION
-// Memory debugging
+// Memory debugging with Verilator compatibility
+// Registers to track memory writes for verification
+logic verify_write;
+logic [DATA_WIDTH-1:0] verify_addr;
+logic [DATA_WIDTH-1:0] verify_data;
+
+// Set the verification flags on write
 always @(posedge clk) begin
-    if (mem_write_i && mem_size_i == 2'b10 && addr_i < MEM_SIZE - 3) begin
-        
-        // Verify memory contents after write
-        $display("MEMORY CONTENTS after write at addr=0x%h:", addr_i);
+    if (rst_n) begin
+        if (mem_write_i && mem_size_i == 2'b10 && addr_i < MEM_SIZE - 3) begin
+            verify_write <= 1'b1;
+            verify_addr <= addr_i;
+            verify_data <= wdata_i;
+        end else begin
+            verify_write <= 1'b0;
+        end
+    end else begin
+        verify_write <= 1'b0;
+    end
+end
+
+// Verify on the next cycle after the write
+always @(posedge clk) begin
+    if (rst_n && verify_write) begin
+        // Verify memory contents after write (now on next cycle)
+        $display("MEMORY CONTENTS after write at addr=0x%h:", verify_addr);
         $display("  Memory[%0d:%0d] = %02x %02x %02x %02x",
-                addr_i+3, addr_i,
-                memory[addr_i], memory[addr_i+1], 
-                memory[addr_i+2], memory[addr_i+3]);
+                verify_addr+3, verify_addr,
+                memory[verify_addr], memory[verify_addr+1], 
+                memory[verify_addr+2], memory[verify_addr+3]);
                 
-        // Reconstruct the word to verify correctness
+        // Directly use concatenation in display without temporary variable
         $display("  Reconstructed word: 0x%08x", 
-                {memory[addr_i+3], memory[addr_i+2], 
-                 memory[addr_i+1], memory[addr_i]});
+                {memory[verify_addr+3], memory[verify_addr+2], 
+                 memory[verify_addr+1], memory[verify_addr]});
         
         // Check if the stored word matches the expected value
-        if ({memory[addr_i+3], memory[addr_i+2], memory[addr_i+1], memory[addr_i]} != wdata_i) begin
+        if ({memory[verify_addr+3], memory[verify_addr+2], 
+             memory[verify_addr+1], memory[verify_addr]} != verify_data) begin
             $display("  ERROR: Stored word 0x%08x doesn't match input 0x%08x", 
-                    {memory[addr_i+3], memory[addr_i+2], memory[addr_i+1], memory[addr_i]}, 
-                    wdata_i);
+                    {memory[verify_addr+3], memory[verify_addr+2], 
+                     memory[verify_addr+1], memory[verify_addr]}, 
+                    verify_data);
         end
     end
 end

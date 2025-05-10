@@ -27,10 +27,10 @@ module forwarding_unit #(
     output logic [1:0] forward_b
 );
 
-// Improved store instruction detection - checks opcode directly
+// Store instruction detection - checks opcode directly
 wire is_store = (ex_instr[6:0] == 7'b0100011);
 
-// Debug signals to help track execution
+// Debug signals
 logic is_executing_store;
 logic rs2_being_forwarded;
 
@@ -65,10 +65,9 @@ always_comb begin
         end
     end
     
-    // RS2 forwarding logic - IMPROVED LOGIC FOR STORES
-    
+    // RS2 forwarding logic - unified for all instruction types
     if (ex_rs2_addr != 5'b0) begin  // Don't forward for register x0
-        // Enhanced debug for store instructions
+        // Debug output for store instructions
         if (is_store) begin
             `ifdef SIMULATION
                 $display("STORE INSTRUCTION DETECTED IN FORWARDING UNIT: ex_instr=0x%h", ex_instr);
@@ -76,46 +75,37 @@ always_comb begin
             `endif
         end
         
-        // Special forwarding for store instructions - more aggressive checking
-        // Fix the forwarding detection for store instructions
-        if (is_store) begin
-            // Check WB stage forwarding more aggressively
-            if (wb_rd_addr == ex_rs2_addr && wb_reg_write) begin
-                forward_b = 2'b01;  // Forward from WB stage
-                `ifdef SIMULATION
-                    $display("STORE FORWARDING ACTIVE: Using x%0d from WB stage (FIXED)", ex_rs2_addr);
-                    $display("  WB instr=0x%h, WB.rd_addr=%0d", wb_instr, wb_rd_addr);
-                `endif
-            end
-            // Check MEM stage forwarding
-            else if (mem_rd_addr == ex_rs2_addr && mem_reg_write) begin
-                forward_b = 2'b10;  // Forward from MEM stage
-                `ifdef SIMULATION
+        // Check MEM stage forwarding (highest priority)
+        if (mem_reg_write && (mem_rd_addr == ex_rs2_addr)) begin
+            forward_b = 2'b10;  // Forward from MEM stage
+            rs2_being_forwarded = 1'b1;
+            
+            `ifdef SIMULATION
+                if (is_store) begin
                     $display("STORE FORWARDING ACTIVE: Using x%0d from MEM stage", ex_rs2_addr);
                     $display("  MEM instr=0x%h, MEM.rd_addr=%0d", mem_instr, mem_rd_addr);
-                `endif
-            end
-        end
-        // Standard forwarding for regular instructions
-        else begin
-            // Check MEM stage forwarding (higher priority)
-            if (mem_reg_write && (mem_rd_addr == ex_rs2_addr)) begin
-                forward_b = 2'b10;
-                `ifdef SIMULATION
+                end else begin
                     $display("FORWARDING: RS2 x%0d from MEM stage (x%0d), mem_reg_write=%b", 
                              ex_rs2_addr, mem_rd_addr, mem_reg_write);
                     $display("FORWARDING: MEM instr=0x%h, EX instr=0x%h", mem_instr, ex_instr);
-                `endif
-            end
-            // Check WB stage forwarding if MEM stage doesn't match
-            else if (wb_reg_write && (wb_rd_addr == ex_rs2_addr)) begin
-                forward_b = 2'b01;
-                `ifdef SIMULATION
+                end
+            `endif
+        end
+        // Check WB stage forwarding if MEM stage doesn't match
+        else if (wb_reg_write && (wb_rd_addr == ex_rs2_addr)) begin
+            forward_b = 2'b01;  // Forward from WB stage
+            rs2_being_forwarded = 1'b1;
+            
+            `ifdef SIMULATION
+                if (is_store) begin
+                    $display("STORE FORWARDING ACTIVE: Using x%0d from WB stage", ex_rs2_addr);
+                    $display("  WB instr=0x%h, WB.rd_addr=%0d", wb_instr, wb_rd_addr);
+                end else begin
                     $display("FORWARDING: RS2 x%0d from WB stage (x%0d), wb_reg_write=%b", 
                              ex_rs2_addr, wb_rd_addr, wb_reg_write);
                     $display("FORWARDING: WB instr=0x%h, EX instr=0x%h", wb_instr, ex_instr);
-                `endif
-            end
+                end
+            `endif
         end
     end
 end

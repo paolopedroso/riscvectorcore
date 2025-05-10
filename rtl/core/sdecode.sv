@@ -1,22 +1,10 @@
 /*
- *
+ * Decoder for RISC-V instructions
  *
  * @copyright 2025 Paolo Pedroso <paoloapedroso@gmail.com>
  *
  * @license Apache 2.0
  */
-
-/*
-
-Vector DATA_WIDTH 32 bit encoding
-
-31        25 24    20 19    15 14    12 11        7 6         0
-+----------+--------+--------+--------+-----------+-----------+
-| funct7   | vs2    | vs1    | funct3 | vd        | opcode    |
-+----------+--------+--------+--------+-----------+-----------+
-  7 bits     5 bits   5 bits   3 bits   5 bits      7 bits
-
-*/
 
 module sdecode #(
    parameter int DATA_WIDTH = 32
