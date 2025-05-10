@@ -17,6 +17,9 @@
  #include <map>
  #include "Vtop.h"
  #include "Vtop___024root.h"
+
+ // Pipeline Debugger
+ #include "pipeline_debug.cpp"  // Include the pipeline debugger header
  
  vluint64_t main_time = 0;
  unsigned int total_cycles = 0;
@@ -320,6 +323,8 @@
      VerilatedContext* contextp = new VerilatedContext;
      contextp->commandArgs(argc, argv);
      Vtop* top = new Vtop(contextp);
+     PipelineDebugger pipeline_debug;
+
      
      // Trace setup
      VerilatedVcdC* tfp = nullptr;
@@ -372,7 +377,7 @@
      printf("Initial PC value: 0x%08x\n", top->rootp->top__DOT__pc_out);
      
      // Run endianness test
-    //  run_endianness_test(top);
+     // run_endianness_test(top);
      
      // Examine instruction memory contents
      printf("Instruction memory contents:\n");
@@ -412,6 +417,47 @@
          // Execute ALU and other logic on clock edge
          if (top->clk && top->rst_n) {
              // Track execution on positive clock edge
+                 pipeline_debug.update_state(
+                    top,                              // Top module pointer
+                    top->rootp->top__DOT__stall_pipeline,  // Stall signal
+                    false,        // PC write signal
+                    top->rootp->top__DOT__take_branch,     // Branch taken
+                    
+                    top->rootp->top__DOT__forward_a,       // Forward A
+                    top->rootp->top__DOT__forward_b,       // Forward B
+                    
+                    top->rootp->top__DOT__if_id_instr,     // IF/ID instruction
+                    top->rootp->top__DOT__id_ex_instr,     // ID/EX instruction
+                    top->rootp->top__DOT__ex_mem_instr,    // EX/MEM instruction
+                    top->rootp->top__DOT__mem_wb_instr,    // MEM/WB instruction
+                    
+                    top->rootp->top__DOT__rs1_addr,        // Decode rs1
+                    top->rootp->top__DOT__rs2_addr,        // Decode rs2
+                    top->rootp->top__DOT__id_ex_rs1_addr,  // ID/EX rs1
+                    top->rootp->top__DOT__id_ex_rs2_addr,  // ID/EX rs2
+                    top->rootp->top__DOT__id_ex_rd_addr,   // ID/EX rd
+                    top->rootp->top__DOT__ex_mem_rd_addr,  // EX/MEM rd
+                    top->rootp->top__DOT__mem_wb_rd_addr,  // MEM/WB rd
+                    
+                    top->rootp->top__DOT__rs1_data,        // rs1 data
+                    top->rootp->top__DOT__rs2_data,        // rs2 data
+                    top->rootp->top__DOT__id_ex_rs1_data,  // ID/EX rs1 data
+                    top->rootp->top__DOT__id_ex_rs2_data,  // ID/EX rs2 data 
+                    top->rootp->top__DOT__id_ex_alu_op,  // Using id_ex_alu_op instead of alu_result
+                    top->rootp->top__DOT__ex_mem_alu_result, // EX/MEM ALU result
+                    top->rootp->top__DOT__mem_rdata,       // Memory read data
+                    top->rootp->top__DOT__rd_data,         // Writeback data
+                    
+                    top->rootp->top__DOT__reg_write_en,    // Decode reg write
+                    top->rootp->top__DOT__id_ex_reg_write, // ID/EX reg write
+                    top->rootp->top__DOT__ex_mem_reg_write, // EX/MEM reg write
+                    top->rootp->top__DOT__mem_wb_reg_write, // MEM/WB reg write
+                    top->rootp->top__DOT__id_ex_mem_write, // ID/EX mem write
+                    top->rootp->top__DOT__ex_mem_mem_write, // EX/MEM mem write
+                    
+                    top->rootp->top__DOT__ex_mem_rs2_data  // Store data
+                );
+
              if (main_time % 2 == 1) {
                  // Get current instruction - no endianness swapping needed
                  uint32_t instr = top->rootp->top__DOT__instr;
@@ -475,7 +521,7 @@
                      
                      // Print one final register summary to console
                      printf("\n=== Register Values Summary (RISC-V Little-Endian) ===\n");
-                     for (int i = 1; i <= 12; i++) {
+                     for (int i = 0; i <= 31; i++) {
                          uint32_t value = top->rootp->top__DOT__sregfile_inst__DOT__register[i];
                          
                          printf("x%d (%5s): 0x%08x (decimal: %d)\n", 
@@ -490,22 +536,7 @@
                      // Exit simulation
                      program_completed = true;
                  }
-                 
-                 // Monitor specific instructions
-                 if (instr == 0x002081b3) { // ADD x3, x1, x2
-                     printf("FOUND ADD INSTRUCTION (x3 = x1 + x2)\n");
-                     
-                     // Debug output for registers and ALU inputs/outputs
-                     uint32_t rs1_val = top->rootp->top__DOT__rs1_data;
-                     uint32_t rs2_val = top->rootp->top__DOT__rs2_data;
-                     printf("REGISTER VALUES: x1=0x%08x, x2=0x%08x\n", rs1_val, rs2_val);
-                     
-                     // Debug ALU operation
-                     uint32_t alu_in1 = top->rootp->top__DOT__alu_input_a;
-                     uint32_t alu_in2 = top->rootp->top__DOT__alu_input_b;
-                     uint32_t alu_out = top->rootp->top__DOT__ex_mem_alu_result;
-                     printf("ALU INPUTS: 0x%08x + 0x%08x = 0x%08x\n", alu_in1, alu_in2, alu_out);
-                 }
+                
                  
                  // Dump detailed pipeline state occasionally
                  if (total_cycles % 10 == 0) {
@@ -551,7 +582,7 @@
  
          // Optional simplified summary with proper formatting - CORRECTLY DISPLAYED
          printf("\n=== Register Values Summary (RISC-V Little-Endian) ===\n");
-         for (int i = 1; i <= 12; i++) {  // Print only registers x1-x12 for brevity
+         for (int i = 0; i <= 31; i++) {  // Print only registers x1-x12 for brevity
              // Direct access without endianness correction
              uint32_t value = top->rootp->top__DOT__sregfile_inst__DOT__register[i];
              
