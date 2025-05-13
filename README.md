@@ -1,5 +1,17 @@
 # RISC-V Scalar Core Implementation (IN DEVELOPMENT)
 
+## Current Limitations
+- 32-bit RISC-V Integer (RV32I) instruction set
+- Basic pipeline with simple hazard handling
+- Limited memory and register file size
+
+## Future Improvements
+- Currently extending the design to support RISC-V vector extensions (RVV) for improved parallel processing capabilities, with planned implementation of custom vector register file and vector execution units
+- Implement more advanced branch prediction
+- Add support for RV32M extension (multiplication/division)
+- Enhance hazard detection and forwarding
+- Implement cache mechanisms
+
 ## Project Overview
 This is a 32-bit RISC-V scalar processor core implemented in SystemVerilog, featuring a 5-stage pipeline design with comprehensive hazard detection and forwarding mechanisms.
 
@@ -79,18 +91,6 @@ make clean
 make
 make run
 ```
-
-## Current Limitations
-- 32-bit RISC-V Integer (RV32I) instruction set
-- Basic pipeline with simple hazard handling
-- Limited memory and register file size
-
-## Future Improvements
-- Currently extending the design to support RISC-V vector extensions (RVV) for improved parallel processing capabilities, with planned implementation of custom vector register file and vector execution units
-- Implement more advanced branch prediction
-- Add support for RV32M extension (multiplication/division)
-- Enhance hazard detection and forwarding
-- Implement cache mechanisms
 
 ## Licensing
 Apache 2.0 License
