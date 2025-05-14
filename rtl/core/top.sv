@@ -1,5 +1,5 @@
 /*
- * 32-bit RISC-V Vector Core - Fixed Version
+ * 32-bit RISC-V Vector Core
  *
  * @copyright 2025 Paolo Pedroso <paoloapedroso@gmail.com>
  *
@@ -27,7 +27,6 @@ always @(posedge clk) begin
             $display("WARNING: Maximum cycle count (%0d) reached. Terminating simulation.", MAX_CYCLES);
             // Add register dump and endianness comparison before termination
             sregfile_inst.dump_registers();
-            display_endianness_comparison();
             $finish;
         end
     end
@@ -708,61 +707,6 @@ always @(posedge clk) begin
 end
 `endif
 
-task display_endianness_comparison;
-    int i;
-    logic [31:0] raw;
-    
-    $display("\n=== Register Values (Native RISC-V Little-Endian) ===");
-    for (i = 1; i < 32; i++) begin
-        raw = sregfile_inst.register[i];
-        $display("  x%0d = 0x%08h (Bytes: %02x %02x %02x %02x)", 
-                 i, raw, 
-                 raw[7:0], raw[15:8], raw[23:16], raw[31:24]);
-    end
-endtask
-
-// Add this block before endmodule
-// Improved infinite loop detection logic - reduce threshold from 50 to 20 cycles
-`ifdef SIMULATION
-always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        last_pc <= 32'hFFFFFFFF;  // Invalid initial value
-        same_pc_counter <= 10'd0;
-        detected_infinite_loop <= 1'b0;
-    end else begin
-        // Check if we're executing the same instruction repeatedly
-        if (pc_out == last_pc) begin
-            // Increment counter if we've been at the same PC
-            if (same_pc_counter < 10'd20) begin  // Reduced from 50 to 20 cycles before detection
-                same_pc_counter <= same_pc_counter + 1;
-            end else if (!detected_infinite_loop) begin
-                // Check the opcode to see if this is likely an infinite loop
-                // JAL (opcode 1101111) or JALR (opcode 1100111) to same address
-                if (instr[6:0] == 7'b1101111 || instr[6:0] == 7'b1100111) begin
-                    $display("DETECTED: Infinite loop at PC=0x%08x, instruction=0x%08x", 
-                             pc_out, instr);
-                    $display("SIMULATION: Program appears to have terminated with infinite loop.");
-                    
-                    detected_infinite_loop <= 1'b1;
-                    
-                    // Display register values and endianness comparison
-                    sregfile_inst.dump_registers();
-                    display_endianness_comparison();
-                    
-                    // Gracefully terminate simulation
-                    $finish;
-                end
-            end
-        end else begin
-            // Reset counter when PC changes
-            same_pc_counter <= 10'd0;
-        end
-        
-        last_pc <= pc_out;
-    end
-end
-`endif
-
 // EBREAK/ECALL detection at multiple pipeline stages
 `ifdef SIMULATION
 always @(posedge clk) begin
@@ -808,28 +752,6 @@ always @(posedge clk) begin
 end
 `endif
 
-// Add this check in the Monitor section of top.sv to verify register values
-`ifdef SIMULATION
-// Register value verification for initial instructions
-always @(posedge clk) begin
-    if (rst_n) begin
-        // After the first two instructions should have executed (using cycle_count instead)
-        if (cycle_count == 3) begin  // Changed from total_cycles to cycle_count
-            $display("REGISTER VERIFICATION AT CYCLE 3:");
-            $display("  x1 should be 1, actual value: 0x%h", sregfile_inst.register[1]);
-            $display("  x2 should be 2, actual value: 0x%h", sregfile_inst.register[2]);
-        end
-        
-        // Before ADD instruction executes (at PC=0x8)
-        if (pc_out == 32'h00000008) begin
-            $display("REGISTER CHECK BEFORE ADD: x1=0x%h, x2=0x%h", 
-                     sregfile_inst.register[1], 
-                     sregfile_inst.register[2]);
-        end
-    end
-end
-`endif
-
 `ifdef SIMULATION
 // Memory operation tracking
 always @(posedge clk) begin
@@ -854,38 +776,6 @@ always @(posedge clk) begin
         if (ex_mem_mem_write && ex_mem_mem_size == 2'b10) begin
             $display("MEMORY WRITE EXECUTING: addr=0x%h, data=0x%h",
                      ex_mem_alu_result, ex_mem_rs2_data);
-        end
-    end
-end
-`endif
-
-`ifdef SIMULATION
-// Critical instruction tracking
-always @(posedge clk) begin
-    if (rst_n) begin
-        static int instr_count = 0;
-        
-        // Track instruction execution by PC value
-        if (pc_out == 32'h0) begin
-            $display("\n=== Starting Program Execution ===\n");
-            instr_count = 0;
-        end
-        
-        // Increment counter only when a new instruction is fetched
-        if (if_id_instr != 32'h0 && !stall_pipeline) begin
-            instr_count++;
-            
-            case (instr_count)
-                1: $display("Instruction 1: ADDI x1, x0, 1 - Setting x1=1");
-                2: $display("Instruction 2: ADDI x2, x0, 2 - Setting x2=2");
-                3: begin
-                    $display("Instruction 3: ADD x3, x1, x2 - Should set x3=3");
-                    $display("  Register values - x1=%0d, x2=%0d", 
-                             sregfile_inst.register[1], sregfile_inst.register[2]);
-                    $display("  Correctly decoded: rs1=x%0d, rs2=x%0d, rd=x%0d", 
-                             rs1_addr, rs2_addr, rd_addr);
-                end
-            endcase
         end
     end
 end

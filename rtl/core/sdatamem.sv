@@ -119,17 +119,6 @@ always_ff @(posedge clk or negedge rst_n) begin
 
             $display("MEMORY DEBUG: Writing to address 0x%h, data=0x%h, size=%0d", 
                      addr_i, wdata_i, mem_size_i);
-            
-            if (addr_i == 32'h0 && mem_size_i == 2'b10) begin
-                $display("MEMORY STORE TO ADDRESS 0: value=0x%h", wdata_i);
-                $display("  Expected value should be 3 (from register x3)");
-                
-                // Add extra verification
-                if (wdata_i != 32'h3) begin
-                    $display("  WARNING: Storing incorrect value to memory address 0!");
-                    $display("  This will affect the subsequent load to register x6");
-                end
-            end
         `endif
         // Add bounds checking
         if (addr_i >= MEM_SIZE - 3) begin  // -3 to account for word access
@@ -181,6 +170,8 @@ always_ff @(posedge clk or negedge rst_n) begin
     end
 end
 
+
+// Ensure data writes
 `ifdef SIMULATION
 // Memory debugging with Verilator compatibility
 // Registers to track memory writes for verification

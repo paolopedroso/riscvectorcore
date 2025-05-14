@@ -1,5 +1,5 @@
 /*
- * Forwarding Unit for RISC-V Processor - Fixed Version
+ * Forwarding Unit for RISC-V Processor (In Development)
  *
  * @copyright 2025 Paolo Pedroso <paoloapedroso@gmail.com>
  *

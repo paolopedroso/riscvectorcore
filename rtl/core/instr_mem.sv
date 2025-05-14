@@ -1,5 +1,5 @@
 /*
- * Instruction Memory - Fixed version
+ * Instruction Memory
  *
  * @copyright 2025 Paolo Pedroso <paoloapedroso@gmail.com>
  *

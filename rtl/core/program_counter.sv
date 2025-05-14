@@ -1,5 +1,5 @@
 /*
- * Program Counter - Fixed Version
+ * Program Counter
  *
  * @copyright 2025 Paolo Pedroso <paoloapedroso@gmail.com>
  *
