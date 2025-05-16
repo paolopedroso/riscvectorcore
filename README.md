@@ -112,8 +112,8 @@ ebreak            # End simulation
 
 The processor may experience issues with **load and store** instructions. Common problems include:
 
-1. **Data Memory Endianness**: RISC-V uses little-endian byte ordering, which requires proper handling during loads and stores.
-   - Solution: The sdatamem.sv module has been updated with explicit byte ordering for little-endian memory access, with separate code paths for byte, halfword, and word operations.
+~~1. **Data Memory Endianness**: RISC-V uses little-endian byte ordering, which requires proper handling during loads and stores.~~
+   ~~- Solution: The sdatamem.sv module has been updated with explicit byte ordering for little-endian memory access, with separate code paths for byte, halfword, and word operations.~~
 
 2. **Forwarding for Store Instructions**: Store instructions need special forwarding logic to capture recently calculated values.
    - Solution: Enhanced forwarding_unit.sv includes specific logic for store operations, with careful handling of the rs2 register value that needs to be stored.
