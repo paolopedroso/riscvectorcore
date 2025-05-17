@@ -1,5 +1,5 @@
 /*
- * Data Memory - Fixed version
+ * Data Memory
  *
  * @copyright 2025 Paolo Pedroso <paoloapedroso@gmail.com>
  *
@@ -22,7 +22,11 @@ module sdatamem #(
     // Address and data
     input logic [DATA_WIDTH-1:0] addr_i,    // Memory address
     input logic [DATA_WIDTH-1:0] wdata_i,   // Data to write
-    output logic [DATA_WIDTH-1:0] rdata_o   // Data read from memory
+    output logic [DATA_WIDTH-1:0] rdata_o,  // Data read from memory
+
+    // Debugging signals
+    input logic [DATA_WIDTH-1:0] curr_instr,
+    input logic [DATA_WIDTH-1:0] curr_pc
 );
 
 // Internal signals
@@ -32,7 +36,7 @@ logic [7:0] memory [MEM_SIZE-1:0];
 // Debug memory status
 `ifdef SIMULATION
     function void print_mem_status(input [31:0] addr);
-        $display("MEMORY STATUS: Memory[%0d:%0d] = %02x %02x %02x %02x",
+        $display("DMEM: MEMORY STATUS: Memory[%0d:%0d] = %02x %02x %02x %02x",
                 addr+3, addr,
                 memory[addr], memory[addr+1], 
                 memory[addr+2], memory[addr+3]);
@@ -45,12 +49,15 @@ always_comb begin
     
     if (mem_read_i) begin
         `ifdef SIMULATION
-            $display("MEMORY DEBUG: Reading from address 0x%h", addr_i);
+            $display("DMEM: LOAD INSTRUCTION DETECTED");
+            $display("DMEM: MEMORY DEBUG: Reading from address 0x%h", addr_i);
+            $display("DMEM: INSTRUCTION: 0x%h", curr_instr);
+            $display("DMEM: PC: 0x%h", curr_pc);
         `endif
         // Add bounds checking
         if (addr_i >= MEM_SIZE - 3) begin  // -3 to account for word access
             `ifdef SIMULATION
-                $display("WARNING: Memory read out of bounds: addr=0x%h", addr_i);
+                $display("DMEM: WARNING: Memory read out of bounds: addr=0x%h", addr_i);
             `endif
             rdata_o = 32'hDEADBEEF;  // Error pattern
         end else begin
@@ -60,7 +67,7 @@ always_comb begin
                     rdata_o = {{24{memory[addr_i][7]}}, memory[addr_i]};
                     
                     `ifdef SIMULATION
-                        $display("MEMORY READ BYTE: addr=0x%h, data=%02x", addr_i, memory[addr_i]);
+                        $display("DMEM: MEMORY READ BYTE: addr=0x%h, data=%02x", addr_i, memory[addr_i]);
                     `endif
                 end
                 
@@ -69,7 +76,7 @@ always_comb begin
                     rdata_o = {{16{memory[addr_i+1][7]}}, memory[addr_i+1], memory[addr_i]};
                     
                     `ifdef SIMULATION
-                        $display("MEMORY READ HALFWORD: addr=0x%h, data=%04x", addr_i, {memory[addr_i+1], memory[addr_i]});
+                        $display("DMEM: MEMORY READ HALFWORD: addr=0x%h, data=%04x", addr_i, {memory[addr_i+1], memory[addr_i]});
                     `endif
                 end
                 
@@ -80,23 +87,23 @@ always_comb begin
                     
                     `ifdef SIMULATION
                         // Basic read information
-                        $display("MEMORY READ WORD: addr=0x%h, data=0x%08x", addr_i, 
+                        $display("DMEM: MEMORY READ WORD: addr=0x%h, data=0x%08x", addr_i, 
                                 {memory[addr_i+3], memory[addr_i+2], 
                                 memory[addr_i+1], memory[addr_i]});
                                 
                         // Detailed little-endian memory layout explanation
-                        $display("  Memory layout (RISC-V little-endian):");
-                        $display("    addr+0 (0x%h): 0x%02x (LSB, bits 7-0)", 
+                        $display("DMEM:   Memory layout (RISC-V little-endian):");
+                        $display("DMEM:     addr+0 (0x%h): 0x%02x (LSB, bits 7-0)", 
                                 addr_i, memory[addr_i]);
-                        $display("    addr+1 (0x%h): 0x%02x (bits 15-8)", 
+                        $display("DMEM:     addr+1 (0x%h): 0x%02x (bits 15-8)", 
                                 addr_i+1, memory[addr_i+1]);
-                        $display("    addr+2 (0x%h): 0x%02x (bits 23-16)", 
+                        $display("DMEM:     addr+2 (0x%h): 0x%02x (bits 23-16)", 
                                 addr_i+2, memory[addr_i+2]);
-                        $display("    addr+3 (0x%h): 0x%02x (MSB, bits 31-24)", 
+                        $display("DMEM:     addr+3 (0x%h): 0x%02x (MSB, bits 31-24)", 
                                 addr_i+3, memory[addr_i+3]);
                                 
                         // Show final register value
-                        $display("  Final register value: 0x%08x", rdata_o);
+                        $display("DMEM:   Final register value: 0x%08x", rdata_o);
                         print_mem_status(addr_i);
                     `endif
                 end
@@ -105,6 +112,7 @@ always_comb begin
     end
 end
 
+// Store Instruction Detection
 // Write logic block with bounds checking
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -114,16 +122,15 @@ always_ff @(posedge clk or negedge rst_n) begin
     end
     else if (mem_write_i) begin
         `ifdef SIMULATION
-            $display("MEMORY STORE DEBUG: Writing to addr=0x%h, data=0x%h", 
-             addr_i, wdata_i);
-
-            $display("MEMORY DEBUG: Writing to address 0x%h, data=0x%h, size=%0d", 
+            $display("DMEM: SAVE INSTRUCTION DETECTED");
+            $display("DMEM: INSTRUCTION: 0x%h", curr_instr);
+            $display("DMEM: MEMORY DEBUG: Writing to address 0x%h, data=0x%h, size=%0d", 
                      addr_i, wdata_i, mem_size_i);
         `endif
         // Add bounds checking
         if (addr_i >= MEM_SIZE - 3) begin  // -3 to account for word access
             `ifdef SIMULATION
-                $display("WARNING: Memory write out of bounds: addr=0x%h", addr_i);
+                $display("DMEM: WARNING: Memory write out of bounds: addr=0x%h", addr_i);
             `endif
             // Don't write anything
         end else begin
@@ -131,7 +138,7 @@ always_ff @(posedge clk or negedge rst_n) begin
                 2'b00: begin // Byte
                     memory[addr_i] <= wdata_i[7:0];
                     `ifdef SIMULATION
-                        $display("MEMORY WRITE BYTE: addr=0x%h, data=%02x", addr_i, wdata_i[7:0]);
+                        $display("DMEM: MEMORY WRITE BYTE: addr=0x%h, data=%02x", addr_i, wdata_i[7:0]);
                     `endif
                 end
                 
@@ -139,7 +146,7 @@ always_ff @(posedge clk or negedge rst_n) begin
                     memory[addr_i]   <= wdata_i[7:0];   // LSB first
                     memory[addr_i+1] <= wdata_i[15:8];  // MSB second
                     `ifdef SIMULATION
-                        $display("MEMORY WRITE HALFWORD: addr=0x%h, data=%04x", addr_i, wdata_i[15:0]);
+                        $display("DMEM: MEMORY WRITE HALFWORD: addr=0x%h, data=%04x", addr_i, wdata_i[15:0]);
                     `endif
                 end
                 
@@ -151,19 +158,19 @@ always_ff @(posedge clk or negedge rst_n) begin
                     
                     // Add extra debug
                     `ifdef SIMULATION
-                        $display("MEMORY WRITE WORD: addr=0x%h, data=0x%08x", addr_i, wdata_i);
-                        $display("  Writing bytes: %02x %02x %02x %02x", 
+                        $display("DMEM: MEMORY WRITE WORD: addr=0x%h, data=0x%08x", addr_i, wdata_i);
+                        $display("DMEM:   Writing bytes: %02x %02x %02x %02x", 
                                 wdata_i[7:0], wdata_i[15:8], wdata_i[23:16], wdata_i[31:24]);
                                 
                         // Add a more visible debug message
-                        $display("** MEMORY STORE: WORD 0x%h written to address 0x%h **", wdata_i, addr_i);
+                        $display("DMEM: ** MEMORY STORE: WORD 0x%h written to address 0x%h **", wdata_i, addr_i);
                     `endif
                 end
             endcase
             
             // Add this for extra validation after any write
             `ifdef SIMULATION
-                $display("MEMORY POST-WRITE CHECK: Address 0x%h now contains bytes: %02x %02x %02x %02x",
+                $display("DMEM: MEMORY POST-WRITE CHECK: Address 0x%h now contains bytes: %02x %02x %02x %02x",
                         addr_i, memory[addr_i], memory[addr_i+1], memory[addr_i+2], memory[addr_i+3]);
             `endif
         end
@@ -197,22 +204,23 @@ end
 // Verify on the next cycle after the write
 always @(posedge clk) begin
     if (rst_n && verify_write) begin
+        #1;
         // Verify memory contents after write (now on next cycle)
-        $display("MEMORY CONTENTS after write at addr=0x%h:", verify_addr);
-        $display("  Memory[%0d:%0d] = %02x %02x %02x %02x",
+        $display("DMEM: MEMORY CONTENTS after write at addr=0x%h:", verify_addr);
+        $display("DMEM:   Memory[%0d:%0d] = %02x %02x %02x %02x",
                 verify_addr+3, verify_addr,
                 memory[verify_addr], memory[verify_addr+1], 
                 memory[verify_addr+2], memory[verify_addr+3]);
                 
         // Directly use concatenation in display without temporary variable
-        $display("  Reconstructed word: 0x%08x", 
+        $display("DMEM:   Reconstructed word: 0x%08x", 
                 {memory[verify_addr+3], memory[verify_addr+2], 
                  memory[verify_addr+1], memory[verify_addr]});
         
         // Check if the stored word matches the expected value
         if ({memory[verify_addr+3], memory[verify_addr+2], 
              memory[verify_addr+1], memory[verify_addr]} != verify_data) begin
-            $display("  ERROR: Stored word 0x%08x doesn't match input 0x%08x", 
+            $display("DMEM:   ERROR: Stored word 0x%08x doesn't match input 0x%08x", 
                     {memory[verify_addr+3], memory[verify_addr+2], 
                      memory[verify_addr+1], memory[verify_addr]}, 
                     verify_data);
