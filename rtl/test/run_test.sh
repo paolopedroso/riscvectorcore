@@ -35,7 +35,7 @@ if [ ! -f "Makefile" ]; then
     if [ -f "sim_main.cpp" ]; then
         echo "Found sim_main.cpp, building simulation..."
         # Compile with Verilator directly
-        verilator --cc --exe --build -j 0 -Wall -Wno-fatal --trace -I"$RTL_DIR" sim_main.cpp "$RTL_DIR"/*.sv --top-module top
+        verilator --cc --exe --build -j 0 -Wall -Wno-fatal --timing --trace -I"$RTL_DIR" sim_main.cpp "$RTL_DIR"/*.sv --top-module top
         
         # Run the simulation
         echo "Running simulation..."
