@@ -1,5 +1,5 @@
 /*
- * Decoder for RISC-V instructions
+ * Decoder Unit
  *
  * @copyright 2025 Paolo Pedroso <paoloapedroso@gmail.com>
  *
@@ -40,6 +40,15 @@ wire [2:0] funct3 = instr_in[14:12];
 wire [4:0] regs1 = instr_in[19:15];
 wire [4:0] regs2 = instr_in[24:20];
 wire [6:0] funct7 = instr_in[31:25];
+
+// Verify instruction decodings
+`ifdef SIMULATION
+    always @(posedge clk or negedge rst_n) begin
+        $display("DECODE: Instruction: 0x%h", instr_in);
+        $display("DECODE: Opcode: 0x%h, funct3: 0x%h, funct7: 0x%h", opcode, funct3, funct7);
+        $display("DECODE: rs1: x%0d, rs2: x%0d, rd: x%0d", regs1, regs2, rd);
+    end
+`endif
 
 logic is_r_type, is_i_type, is_s_type, is_b_type, is_u_type, is_j_type;
 

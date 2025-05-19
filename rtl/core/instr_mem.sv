@@ -49,65 +49,123 @@ module instr_mem #(
         end
     end
 
-// Initialize memory with the correct test program
 // Just ONE initialization block to avoid conflicts
 initial begin
     for (int i = 0; i < MEM_SIZE; i++) begin
         imem[i] = 32'h0;
     end
 
-    // Simple test program - RISC-V instructions
+    //========== Basic ALU and Immediate Operations ==========
+    // Basic register setup
     imem[0] = 32'h00100093;  // addi x1, x0, 1    # x1 = 1
     imem[1] = 32'h00200113;  // addi x2, x0, 2    # x2 = 2
-    imem[2] = 32'h002081b3;  // add x3, x1, x2    # x3 = 3
-    imem[3] = 32'h00219213;  // slli x4, x3, 2    # x4 = 12
-    imem[4] = 32'h00a27293;  // andi x5, x4, 10   # x5 = 8
-    imem[5] = 32'h00302023;  // sw x3, 0(x0)      # store x3 to address 0
-    imem[6] = 32'h00002303;  // lw x6, 0(x0)      # load from address 0 to x6 (should be 3)
-    imem[7] = 32'h00431393;  // slli x7, x6, 4    # x7 = x6 << 4 = 3 << 4 = 48
-    imem[8] = 32'h00100413;  // addi x8, x0, 1    # x8 = 1
-    imem[9] = 32'h02a00493;  // addi x9, x0, 42   # x9 = 42
-    imem[10] = 32'h00300533;  // add x10, x0, x3   # x10 = 3
-    imem[11] = 32'h00200593;  // addi x11, x0, 2   # x11 = 2
-    imem[12] = 32'h00400613;  // addi x12, x0, 4   # x12 = 4
-    // Extended test for store-load forwarding
-    imem[13] = 32'h00c62023; // sw x12, 0(x12)      # store x12(4) to address 4
-    imem[14] = 32'h00100693; // addi x13, x0, 1     # x13 = 1
-    imem[15] = 32'h00062703; // lw x14, 0(x12)      # load from address 4 to x14 (should be 4)
-    imem[16] = 32'h00170713; // addi x14, x14, 1    # x14 = 5
-    imem[17] = 32'h00e62223; // sw x14, 4(x12)      # store x14(5) to address 8
+    imem[2] = 32'h00400193;  // addi x3, x0, 4    # x3 = 4
+    imem[3] = 32'h00800213;  // addi x4, x0, 8    # x4 = 8
     
-    // Multiple store-load sequence with immediate usage
-    imem[18] = 32'h00862503; // lw x10, 8(x12)      # load from address 8 to x10 (should be 5)
-    imem[19] = 32'h00a10133; // add x2, x2, x10     # x2 = 2 + 5 = 7
-    imem[20] = 32'h00112023; // sw x1, 0(x2)        # store x1(1) to address 7
-    imem[21] = 32'h00012783; // lw x15, 0(x2)       # load from address 7 to x15 (should be 1)
+    // Test arithmetic operations
+    imem[4] = 32'h002081b3;  // add  x3, x1, x2   # x3 = 1 + 2 = 3 (tests forwarding)
+    imem[5] = 32'h40308233;  // sub  x4, x1, x3   # x4 = 1 - 3 = -2 (tests forwarding)
     
-    // Complex forwarding test - immediate store after compute
-    imem[22] = 32'h00178793; // addi x15, x15, 1    # x15 = 2
-    imem[23] = 32'h00f12223; // sw x15, 4(x2)       # store x15(2) to address 11
-    imem[24] = 32'h00412803; // lw x16, 4(x2)       # load from address 11 to x16 (should be 2)
+    // Test logical operations
+    imem[6] = 32'h0020f2b3;  // and  x5, x1, x2   # x5 = 1 & 2 = 0
+    imem[7] = 32'h0020e333;  // or   x6, x1, x2   # x6 = 1 | 2 = 3
+    imem[8] = 32'h0020c3b3;  // xor  x7, x1, x2   # x7 = 1 ^ 2 = 3
     
-    // Store-load-operate pattern test
-    imem[25] = 32'h01010813; // addi x16, x2, 16    # x16 = 7 + 16 = 23
-    imem[26] = 32'h01080023; // sb x16, 0(x16)      # store byte x16(23) to address 23
-    imem[27] = 32'h00080883; // lb x17, 0(x16)      # load byte from addr 23 to x17 (should be 23)
-    imem[28] = 32'h00188893; // addi x17, x17, 1    # x17 = 24
+    // Test shifts
+    imem[9]  = 32'h00109413;  // slli x8, x1, 1    # x8 = 1 << 1 = 2
+    imem[10] = 32'h0020d493;  // srli x9, x1, 2    # x9 = 1 >> 2 = 0
+    imem[11] = 32'h4020d513;  // srai x10, x1, 2   # x10 = 1 >> 2 = 0 (arithmetic)
     
-    // Final register consistency check
-    imem[29] = 32'h01100913; // addi x18, x0, 17    # x18 = 17
-    imem[30] = 32'h01200993; // addi x19, x0, 18    # x19 = 18
-    imem[31] = 32'h01300a13; // addi x20, x0, 19    # x20 = 19
-    imem[32] = 32'h01400a93; // addi x21, x0, 20    # x21 = 20
+    //========== Memory Operations with Data Hazards ==========
+    // Store operations - test immediate forwarding
+    imem[12] = 32'h00302023;  // sw   x3, 0(x0)    # mem[0] = 3
+    imem[13] = 32'h00402223;  // sw   x4, 4(x0)    # mem[4] = -2
     
-    // End program with EBREAK
-    imem[33] = 32'h00100073; // EBREAK instruction to properly end simulation    
-
-    `ifdef SIMULATION
-        $display("Instruction memory initialized with test program");
-        for (int i = 0; i < 14; i++) begin
-            $display("  imem[%0d] = 0x%h", i, imem[i]);
-        end
-    `endif
+    // Load operations - test load-use hazard
+    imem[14] = 32'h00002583;  // lw   x11, 0(x0)   # x11 = mem[0] = 3
+    imem[15] = 32'h00b00593;  // addi x11, x11, 0  # NOP-like to test load-use hazard
+    
+    // Load-Add forwarding test
+    imem[16] = 32'h00402603;  // lw   x12, 4(x0)   # x12 = mem[4] = -2
+    imem[17] = 32'h00c58633;  // add  x12, x11, x12 # x12 = 3 + (-2) = 1
+    
+    // Complex store/load sequence with back-to-back dependencies
+    imem[18] = 32'h00c02423;  // sw   x12, 8(x0)   # mem[8] = 1
+    imem[19] = 32'h00802683;  // lw   x13, 8(x0)   # x13 = mem[8] = 1
+    imem[20] = 32'h00d106b3;  // add  x13, x2, x13 # x13 = 2 + 1 = 3
+    imem[21] = 32'h00d02623;  // sw   x13, 12(x0)  # mem[12] = 3
+    
+    //========== Different Memory Access Sizes ==========
+    // Byte operations
+    imem[22] = 32'h0fd00713;  // addi x14, x0, 253 # x14 = 253 (0xFD)
+    imem[23] = 32'h00e02823;  // sw   x14, 16(x0)  # mem[16] = 253
+    imem[24] = 32'h01000783;  // lb   x15, 16(x0)  # x15 = mem[16](byte) = -3 (sign extended)
+    imem[25] = 32'h01004803;  // lbu  x16, 16(x0)  # x16 = mem[16](byte) = 253 (zero extended)
+    
+    // Halfword operations
+    imem[26] = 32'haaaab837;  // lui  x16, 0xaaaab # Upper 20 bits to make big value
+    imem[27] = 32'h01002a23;  // sw   x16, 20(x0)  # mem[20] = big value
+    imem[28] = 32'h01401883;  // lh   x17, 20(x0)  # x17 = mem[20](halfword) = sign extended
+    imem[29] = 32'h01405903;  // lhu  x18, 20(x0)  # x18 = mem[20](halfword) = zero extended
+    
+    //========== Test Branches ==========
+    // Branch test setup
+    imem[30] = 32'h00300993;  // addi x19, x0, 3   # x19 = 3
+    imem[31] = 32'h00500a13;  // addi x20, x0, 5   # x20 = 5
+    
+    // Test branch equal (not taken)
+    imem[32] = 32'h01498a63;  // beq  x19, x20, 20 # Skip if x19 == x20 (should not branch)
+    
+    // Continue with normal execution
+    imem[33] = 32'h01400a93;  // addi x21, x0, 20  # x21 = 20 (only executed if branch not taken)
+    
+    // Test branch not equal (taken)
+    imem[34] = 32'h01499463;  // bne  x19, x20, 8  # Branch if x19 != x20 (should branch)
+    imem[35] = 32'hfff00b13;  // addi x22, x0, -1  # x22 = -1 (should be skipped)
+    
+    // Branch target
+    imem[36] = 32'h00a00b13;  // addi x22, x0, 10  # x22 = 10 (only executed if branch taken)
+    
+    // Test load after branch
+    imem[37] = 32'h01002b83;  // lw   x23, 16(x0)  # x23 = mem[16] = 253
+    
+    //========== Test Complex Forwarding Cases ==========
+    // Multiple consecutive data hazards
+    imem[38] = 32'h015a0c13;  // addi x24, x20, 21 # x24 = 5 + 21 = 26
+    imem[39] = 32'h018c0c93;  // addi x25, x24, 24 # x25 = 26 + 24 = 50
+    imem[40] = 32'h019c8d13;  // addi x26, x25, 25 # x26 = 50 + 25 = 75
+    imem[41] = 32'h01ad0d93;  // addi x27, x26, 26 # x27 = 75 + 26 = 101
+    
+    // Store-load-store sequence
+    imem[42] = 32'h01b02e23;  // sw   x27, 28(x0)  # mem[28] = 101
+    imem[43] = 32'h01c02e83;  // lw   x29, 28(x0)  # x29 = mem[28] = 101
+    imem[44] = 32'h01d00e13;  // addi x28, x0, 29  # x28 = 29
+    imem[45] = 32'h01c02f23;  // sw   x28, 30(x0)  # mem[30] = 29
+    
+    // Read from register being written
+    imem[46] = 32'h01c00f13;  // addi x30, x0, 28  # x30 = 28
+    imem[47] = 32'h01e00f93;  // addi x31, x0, 30  # x31 = 30
+    imem[48] = 32'h01ef0f33;  // add  x30, x30, x30 # x30 = 28 + 28 = 56
+    
+    //========== Final test and terminate ==========
+    // Test jump and link
+    imem[49] = 32'h018000ef;  // jal  x1, 24       # Jump to inst[55], x1 = PC+4 = 53
+    
+    // Instructions that should be skipped
+    imem[50] = 32'h00000013;  // addi x0, x0, 0    # NOP (should be skipped)
+    imem[51] = 32'h00000013;  // addi x0, x0, 0    # NOP (should be skipped)
+    imem[52] = 32'h00000013;  // addi x0, x0, 0    # NOP (should be skipped)
+    imem[53] = 32'h00000013;  // addi x0, x0, 0    # NOP (should be skipped)
+    imem[54] = 32'h00000013;  // addi x0, x0, 0    # NOP (should be skipped)
+    
+    // Jump target (instruction 55)
+    imem[55] = 32'h00008067;  // jalr x0, 0(x1)    # Return to inst[50], don't update x1
+    
+    // Final test - should be executed after return
+    imem[56] = 32'h12345837;  // lui  x16, 0x12345 # Final register update test
+    
+    // Terminate with EBREAK
+    imem[57] = 32'h00100073;  // EBREAK            # End simulation
 end
+
 endmodule

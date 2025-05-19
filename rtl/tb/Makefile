@@ -20,7 +20,7 @@ VERILATOR_OPTS += -I$(RTL_DIR)  # Include path for RTL files
 VERILATOR_OPTS += -DSIMULATION  # Define SIMULATION for conditional code
 VERILATOR_OPTS += --trace-depth 99  # Increased trace depth
 VERILATOR_OPTS += --assert  # Enable assertions
-VERILATOR_FLAGS += --timing
+VERILATOR_OPTS += --timing
 VERILATOR_DEFINES += -DENDIAN_DEBUG
 
 # C++ sources (in TB_DIR)
