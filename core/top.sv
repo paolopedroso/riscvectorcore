@@ -165,6 +165,8 @@ logic jalr;  // From decoder
 logic id_ex_jalr;  // ID/EX pipeline register
 logic ex_mem_jalr;  // EX/MEM pipeline register
 
+logic [DATA_WIDTH-1:0] ex_mem_rs1_data_jalr;  // New register to store rs1 for JALR
+
 // Control signals
 assign instr_valid = 1'b1;
 assign take_branch = ex_mem_branch && ex_mem_zero_flag;
@@ -375,6 +377,7 @@ always_ff @(posedge clk or negedge rst_n) begin
 
         id_ex_jalr <= 1'b0;
         ex_mem_jalr <= 1'b0;
+        ex_mem_rs1_data_jalr <= '0;
     end
     else begin
         // Update IF/ID stage - controlled by stall
@@ -436,6 +439,9 @@ always_ff @(posedge clk or negedge rst_n) begin
                 $display("TOP: ID/EX: Inserting NOP due to branch/jump");
             `endif
         end else begin
+            if (id_ex_jalr) begin
+                ex_mem_rs1_data_jalr <= forwarded_rs1_value;
+            end
             // Normal operation - keep the same logic
             id_ex_pc <= if_id_pc;
             id_ex_rs1_data <= rs1_data;
@@ -586,7 +592,7 @@ program_counter pc_inst (
     .pc_out(pc_out),
 
     .jalr_en(ex_mem_jalr),
-    .rs1_data(alu_input_a)
+    .rs1_data(ex_mem_rs1_data_jalr)
 );
 
 instr_mem instr_mem_inst (
@@ -950,21 +956,5 @@ always @(posedge clk) begin
 end
 `endif
 
-`ifdef SIMULATION
-always @(posedge clk) begin
-    if (if_id_instr == 32'h002081b3) begin  // ADD x3, x1, x2
-        $display("PIPELINE DEBUG: ADD instruction in ID stage");
-        $display("  x1 value = 0x%h, x2 value = 0x%h", rs1_data, rs2_data);
-    end
-    
-    if (id_ex_instr == 32'h002081b3) begin  // ADD in EX stage
-        $display("PIPELINE DEBUG: ADD instruction in EX stage");
-        $display("  alu_input_a = 0x%h, alu_input_b = 0x%h", alu_input_a, alu_input_b);
-        $display("  forward_a = %b, forward_b = %b", forward_a, forward_b);
-        $display("  mem_rd_addr = x%0d, mem_reg_write = %b", ex_mem_rd_addr, ex_mem_reg_write);
-        $display("  wb_rd_addr = x%0d, wb_reg_write = %b", mem_wb_rd_addr, mem_wb_reg_write);
-    end
-end
-`endif
 
 endmodule
