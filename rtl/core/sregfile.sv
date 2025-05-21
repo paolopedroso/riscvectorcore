@@ -87,9 +87,6 @@ always_ff @(posedge clk or negedge rst_n) begin
             
             `ifdef SIMULATION
                 $display("REGFILE: Writing 0x%08x to x%0d", rd_data_i, rd_addr_i);
-                // Also show the byte order for debugging
-                $display("  Byte order: %02x %02x %02x %02x", 
-                        rd_data_i[7:0], rd_data_i[15:8], rd_data_i[23:16], rd_data_i[31:24]);
             `endif
         end
     end
@@ -100,6 +97,13 @@ always_comb begin
     // Normal read logic for both rs1 and rs2 - let forwarding unit handle special cases
     rs1_data_o = (rs1_addr_i == 0) ? 0 : register[rs1_addr_i];
     rs2_data_o = (rs2_addr_i == 0) ? 0 : register[rs2_addr_i];
+
+    if (reg_write_i && rd_addr_i != 0) begin
+        if (rs1_addr_i == rd_addr_i) 
+            rs1_data_o = rd_data_i;
+        if (rs2_addr_i == rd_addr_i)
+            rs2_data_o = rd_data_i;
+    end
 end
 
 // Register dump task for debugging

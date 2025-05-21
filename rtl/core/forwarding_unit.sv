@@ -19,35 +19,53 @@ module forwarding_unit #(
     output logic [1:0] forward_b
 );
 
-// Store instruction detection
-wire is_store = (ex_instr[6:0] == 7'b0100011);
 
 always_comb begin
     // Default: no forwarding
     forward_a = 2'b00;
     forward_b = 2'b00;
     
-    // RS1 forwarding logic - simplified
+    // RS1 forwarding logic - priorities forwarding from MEM stage over WB stage
     if (ex_rs1_addr != 5'b0) begin  // Don't forward for register x0
-        // Check MEM stage forwarding (higher priority)
+        // Forward from MEM stage (higher priority)
         if (mem_reg_write && (mem_rd_addr == ex_rs1_addr)) begin
             forward_a = 2'b10;
+            
+            // Debug output
+            `ifdef SIMULATION
+                $display("FWD: Forwarding rs1 from MEM stage: x%0d", mem_rd_addr);
+            `endif
         end
-        // Check WB stage forwarding
+        // Forward from WB stage (lower priority)
         else if (wb_reg_write && (wb_rd_addr == ex_rs1_addr)) begin
             forward_a = 2'b01;
+            
+            // Debug output
+            `ifdef SIMULATION
+                $display("FWD: Forwarding rs1 from WB stage: x%0d", wb_rd_addr);
+            `endif
         end
     end
     
-    // RS2 forwarding logic - simplified
+    // RS2 forwarding logic - similar priority scheme
     if (ex_rs2_addr != 5'b0) begin  // Don't forward for register x0
-        // Check MEM stage forwarding (higher priority)
+        // Forward from MEM stage (higher priority)
         if (mem_reg_write && (mem_rd_addr == ex_rs2_addr)) begin
             forward_b = 2'b10;
+            
+            // Debug output
+            `ifdef SIMULATION
+                $display("FWD: Forwarding rs2 from MEM stage: x%0d", mem_rd_addr);
+            `endif
         end
-        // Check WB stage forwarding
+        // Forward from WB stage (lower priority)
         else if (wb_reg_write && (wb_rd_addr == ex_rs2_addr)) begin
             forward_b = 2'b01;
+            
+            // Debug output
+            `ifdef SIMULATION
+                $display("FWD: Forwarding rs2 from WB stage: x%0d", wb_rd_addr);
+            `endif
         end
     end
 end

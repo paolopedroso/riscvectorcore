@@ -18,48 +18,62 @@ module program_counter #(
     input logic [DATA_WIDTH-1:0] imm,
     input logic [DATA_WIDTH-1:0] pc_i,
 
-    output logic [DATA_WIDTH-1:0] pc_out
+    output logic [DATA_WIDTH-1:0] pc_out,
+
+    // jalr special case
+    input logic jalr_en,
+    input logic [DATA_WIDTH-1:0] rs1_data
 );
 
 logic [DATA_WIDTH-1:0] next_pc;
 
-// Next PC logic
 always_comb begin
-    if (branch_en || jmp_en) begin
-        // For branches and jumps, add immediate to current PC
+    // Default: normal increment
+    next_pc = pc_out + 32'd4;
+
+    if (jalr_en) begin
+        // JALR: rs1 + imm
+        next_pc = rs1_data + imm;
+        next_pc[0] = 1'b0;  // Ensure alignment
+        
+        `ifdef SIMULATION
+            $display("PC: JALR from 0x%h to 0x%h (rs1_data=0x%h, imm=0x%h)", 
+                     pc_i, next_pc, rs1_data, imm);
+        `endif
+    end 
+    else if (jmp_en) begin
+        // JAL: pc + imm (JAL is PC-relative)
         next_pc = pc_i + imm;
         
         `ifdef SIMULATION
-            $display("PC: Branch/Jump from 0x%h to 0x%h (imm=0x%h, jmp=%b, branch=%b)", 
-                     pc_i, next_pc, imm, jmp_en, branch_en);
+            $display("PC: JAL from 0x%h to 0x%h (imm=0x%h)", 
+                     pc_i, next_pc, imm);
+        `endif
+    end
+    else if (branch_en) begin
+        // Branch: pc + imm
+        next_pc = pc_i + imm;
+        
+        `ifdef SIMULATION
+            $display("PC: Branch from 0x%h to 0x%h (imm=0x%h)", 
+                     pc_i, next_pc, imm);
         `endif
     end
     else if (pc_i != pc_out) begin
-        // This is for flushing the pipeline - use the provided PC
+        // Pipeline flush
         next_pc = pc_i;
         
         `ifdef SIMULATION
             $display("PC: Forced update from 0x%h to 0x%h", pc_out, next_pc);
         `endif
     end
-    else begin
-        // Normal PC increment by 4 (word-aligned)
-        next_pc = pc_out + 32'd4;
-        
-        `ifdef SIMULATION
-            $display("PC: Normal increment from 0x%h to 0x%h", pc_out, next_pc);
-        `endif
-    end
     
-    // Add bounds checking to prevent runaway execution
+    // Bounds checking
     if ((next_pc > MAX_PC) || (next_pc[1:0] != 2'b00)) begin
         `ifdef SIMULATION
             $display("WARNING: PC invalid (0x%h). Program continuing but PC limited.", next_pc);
-            // Don't finish here - let EBREAK or other checks handle termination
         `endif
-        
-        // Instead of halting, keep PC within valid range
-        next_pc = pc_out;  // Hold the PC value
+        next_pc = pc_out;
     end
 end
 

@@ -31,7 +31,10 @@ module sdecode #(
    output logic [1:0]             result_src_o,
 
    output logic                   uses_rs1_o,
-   output logic                   uses_rs2_o
+   output logic                   uses_rs2_o,
+
+   // Special Case
+   output logic                   jalr_o
 );
 
 wire [6:0] opcode = instr_in[6:0];
@@ -133,6 +136,9 @@ always_comb begin
     uses_rs1_o = 1'b0;
     uses_rs2_o = 1'b0;
 
+    // jalr special case
+    jalr_o = 1'b0;
+
     if (instr_valid) begin
         case (opcode)
             7'b0110011: begin
@@ -141,15 +147,15 @@ always_comb begin
                 uses_rs2_o = 1'b1;
 
                 unique case (funct3)
-                    3'b000: alu_op_o = (funct7[5]) ? 4'b0001 : 4'b0000;
-                    3'b001: alu_op_o = 4'b0010;
-                    3'b010: alu_op_o = 4'b0011;
-                    3'b011: alu_op_o = 4'b0100;
-                    3'b100: alu_op_o = 4'b0101;
-                    3'b101: alu_op_o = (funct7[5]) ? 4'b0111 : 4'b0110;
-                    3'b110: alu_op_o = 4'b1000;
-                    3'b111: alu_op_o = 4'b1001;
-                    default: alu_op_o = 4'b0000;
+                    3'b000: alu_op_o = (funct7[5]) ? 4'b0001 : 4'b0000; // ADD/SUB
+                    3'b001: alu_op_o = 4'b0010; // SLL
+                    3'b010: alu_op_o = 4'b0011; // SLT
+                    3'b011: alu_op_o = 4'b0100; // SLTU
+                    3'b100: alu_op_o = 4'b0101; // XOR
+                    3'b101: alu_op_o = (funct7[5]) ? 4'b0111 : 4'b0110; // SRL/SRA
+                    3'b110: alu_op_o = 4'b1000; // OR
+                    3'b111: alu_op_o = 4'b1001; // AND
+                    default: alu_op_o = 4'b0000; // Default case
                 endcase
             end
 
@@ -158,15 +164,15 @@ always_comb begin
                 uses_rs1_o = 1'b1;
 
                 unique case (funct3)
-                    3'b000: alu_op_o = 4'b0000;
-                    3'b001: alu_op_o = 4'b0010;
-                    3'b010: alu_op_o = 4'b0011;
-                    3'b011: alu_op_o = 4'b0100;
-                    3'b100: alu_op_o = 4'b0101;
-                    3'b101: alu_op_o = (funct7[5]) ? 4'b0111 : 4'b0110;
-                    3'b110: alu_op_o = 4'b1000;
-                    3'b111: alu_op_o = 4'b1001;
-                    default: alu_op_o = 4'b0000;
+                    3'b000: alu_op_o = 4'b0000; // ADDI
+                    3'b001: alu_op_o = 4'b0010; // SLLI
+                    3'b010: alu_op_o = 4'b0011; // SLTI
+                    3'b011: alu_op_o = 4'b0100; // SLTIU
+                    3'b100: alu_op_o = 4'b0101; // XORI
+                    3'b101: alu_op_o = (funct7[5]) ? 4'b0111 : 4'b0110; // SRLI/SRAI
+                    3'b110: alu_op_o = 4'b1000; // ORI
+                    3'b111: alu_op_o = 4'b1001; // ANDI
+                    default: alu_op_o = 4'b0000; // Default case
                 endcase
             end
 
@@ -177,12 +183,12 @@ always_comb begin
                 result_src_o = 2'b01;
 
                 case (funct3)
-                    3'b000: mem_size_o = 2'b00;
-                    3'b001: mem_size_o = 2'b01;
-                    3'b010: mem_size_o = 2'b10;
-                    3'b100: mem_size_o = 2'b00;
-                    3'b101: mem_size_o = 2'b01;
-                    default: mem_size_o = 2'b10;
+                    3'b000: mem_size_o = 2'b00; // LB
+                    3'b001: mem_size_o = 2'b01; // LH
+                    3'b010: mem_size_o = 2'b10; // LW
+                    3'b100: mem_size_o = 2'b00; // LBU
+                    3'b101: mem_size_o = 2'b01; // LHU
+                    default: mem_size_o = 2'b10; // LW
                 endcase
             end
 
@@ -215,12 +221,12 @@ always_comb begin
                 endcase
             end
 
-            7'b0110111: begin
+            7'b0110111: begin // LUI
                 reg_write_en_o = 1'b1;
                 alu_op_o = 4'b0000;
             end
 
-            7'b0010111: begin
+            7'b0010111: begin // AUIPC
                 reg_write_en_o = 1'b1;
                 alu_op_o = 4'b0000;
             end
@@ -239,6 +245,9 @@ always_comb begin
                 jump_o = 1'b1;
                 uses_rs1_o = 1'b1;
                 result_src_o = 2'b10;
+
+                // jalr flag
+                jalr_o = 1'b1;
             end
 
             default: begin

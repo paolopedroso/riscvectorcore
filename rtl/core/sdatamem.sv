@@ -91,16 +91,16 @@ always_comb begin
                                 {memory[addr_i+3], memory[addr_i+2], 
                                 memory[addr_i+1], memory[addr_i]});
                                 
-                        // Detailed little-endian memory layout explanation
-                        $display("DMEM:   Memory layout (RISC-V little-endian):");
-                        $display("DMEM:     addr+0 (0x%h): 0x%02x (LSB, bits 7-0)", 
-                                addr_i, memory[addr_i]);
-                        $display("DMEM:     addr+1 (0x%h): 0x%02x (bits 15-8)", 
-                                addr_i+1, memory[addr_i+1]);
-                        $display("DMEM:     addr+2 (0x%h): 0x%02x (bits 23-16)", 
-                                addr_i+2, memory[addr_i+2]);
-                        $display("DMEM:     addr+3 (0x%h): 0x%02x (MSB, bits 31-24)", 
-                                addr_i+3, memory[addr_i+3]);
+                        // // Detailed little-endian memory layout explanation
+                        // $display("DMEM:   Memory layout (RISC-V little-endian):");
+                        // $display("DMEM:     addr+0 (0x%h): 0x%02x (LSB, bits 7-0)", 
+                        //         addr_i, memory[addr_i]);
+                        // $display("DMEM:     addr+1 (0x%h): 0x%02x (bits 15-8)", 
+                        //         addr_i+1, memory[addr_i+1]);
+                        // $display("DMEM:     addr+2 (0x%h): 0x%02x (bits 23-16)", 
+                        //         addr_i+2, memory[addr_i+2]);
+                        // $display("DMEM:     addr+3 (0x%h): 0x%02x (MSB, bits 31-24)", 
+                        //         addr_i+3, memory[addr_i+3]);
                                 
                         // Show final register value
                         $display("DMEM:   Final register value: 0x%08x", rdata_o);
@@ -117,7 +117,7 @@ end
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         for (int i = 0; i < MEM_SIZE; i++) begin
-            memory[i] <= 8'h00;
+            memory[i] = 8'h00;
         end
     end
     else if (mem_write_i) begin
