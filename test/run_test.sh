@@ -6,21 +6,21 @@ set -o pipefail
 
 # Set paths based on your directory structure
 RTL_DIR="../core"
-TB_DIR="."
+SIM_DIR="."
 CURRENT_DIR=$(pwd)
 
 echo "Using paths:"
 echo "  Current directory: $CURRENT_DIR"
 echo "  RTL_DIR: $RTL_DIR"
-echo "  TB_DIR: $TB_DIR"
+echo "  SIM_DIR: $SIM_DIR"
 
 # Find Makefile
 if [ -f "Makefile" ]; then
     echo "Using Makefile in current directory"
     MAKEFILE_DIR="."
-elif [ -f "../tb/Makefile" ]; then
-    echo "Using Makefile in ../tb directory"
-    MAKEFILE_DIR="../tb"
+elif [ -f "../sim/Makefile" ]; then
+    echo "Using Makefile in ../sim directory"
+    MAKEFILE_DIR="../sim"
     cd "$MAKEFILE_DIR"
 else
     echo "Error: Cannot find Makefile"
