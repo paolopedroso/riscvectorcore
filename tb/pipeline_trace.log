@@ -1,0 +1,2043 @@
+=======================================
+RISC-V Pipeline State Debugger
+=======================================
+
+
+=============== CYCLE 1 ===============
+PC = 0x00000004
+
+PIPELINE STATE:
+  IF/ID: ADDI x1, x0, 1 (0x100093)
+  ID/EX: NOP (0x00000000) (0x0)
+  EX/MEM: NOP (0x00000000) (0x0)
+  MEM/WB: NOP (0x00000000) (0x0)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 0, EX/MEM Reg Write = 0, MEM/WB Reg Write = 0
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x1
+  ID/EX: rs1 = x0, rs2 = x0, rd = x0
+  EX/MEM: rd = x0
+  MEM/WB: rd = x0
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x0, rs2_data = 0x0
+  MEM/WB: wb_data = 0x0
+
+REGISTER CHANGES:
+
+=============== CYCLE 2 ===============
+PC = 0x00000008
+
+PIPELINE STATE:
+  IF/ID: ADDI x2, x0, 2 (0x200113)
+  ID/EX: ADDI x1, x0, 1 (0x100093)
+  EX/MEM: NOP (0x00000000) (0x0)
+  MEM/WB: NOP (0x00000000) (0x0)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 0, MEM/WB Reg Write = 0
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x2
+  ID/EX: rs1 = x0, rs2 = x1, rd = x1
+  EX/MEM: rd = x0
+  MEM/WB: rd = x0
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x0, rs2_data = 0x0
+  MEM/WB: wb_data = 0x0
+
+REGISTER CHANGES:
+
+=============== CYCLE 3 ===============
+PC = 0x0000000c
+
+PIPELINE STATE:
+  IF/ID: ADDI x3, x0, 4 (0x400193)
+  ID/EX: ADDI x2, x0, 2 (0x200113)
+  EX/MEM: ADDI x1, x0, 1 (0x100093)
+  MEM/WB: NOP (0x00000000) (0x0)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 0
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x4
+  ID/EX: rs1 = x0, rs2 = x2, rd = x2
+  EX/MEM: rd = x1
+  MEM/WB: rd = x0
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x1, rs2_data = 0x0
+  MEM/WB: wb_data = 0x0
+
+REGISTER CHANGES:
+
+=============== CYCLE 4 ===============
+PC = 0x00000010
+
+PIPELINE STATE:
+  IF/ID: ADDI x4, x0, 8 (0x800213)
+  ID/EX: ADDI x3, x0, 4 (0x400193)
+  EX/MEM: ADDI x2, x0, 2 (0x200113)
+  MEM/WB: ADDI x1, x0, 1 (0x100093)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x8
+  ID/EX: rs1 = x0, rs2 = x4, rd = x3
+  EX/MEM: rd = x2
+  MEM/WB: rd = x1
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x2, rs2_data = 0x0
+  MEM/WB: wb_data = 0x1
+
+REGISTER CHANGES:
+
+=============== CYCLE 5 ===============
+PC = 0x00000014
+
+PIPELINE STATE:
+  IF/ID: ADD x3, x1, x2 (0x2081b3)
+  ID/EX: ADDI x4, x0, 8 (0x800213)
+  EX/MEM: ADDI x3, x0, 4 (0x400193)
+  MEM/WB: ADDI x2, x0, 2 (0x200113)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x1, rs2 = x2
+  ID/EX: rs1 = x0, rs2 = x8, rd = x4
+  EX/MEM: rd = x3
+  MEM/WB: rd = x2
+
+DATA VALUES:
+  Decode: rs1_data = 0x1, rs2_data = 0x2
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x4, rs2_data = 0x0
+  MEM/WB: wb_data = 0x2
+
+REGISTER CHANGES:
+  x1: 0x0 -> 0x1
+
+=============== CYCLE 6 ===============
+PC = 0x00000018
+
+PIPELINE STATE:
+  IF/ID: SUB x4, x1, x3 (0x40308233)
+  ID/EX: ADD x3, x1, x2 (0x2081b3)
+  EX/MEM: ADDI x4, x0, 8 (0x800213)
+  MEM/WB: ADDI x3, x0, 4 (0x400193)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x1, rs2 = x3
+  ID/EX: rs1 = x1, rs2 = x2, rd = x3
+  EX/MEM: rd = x4
+  MEM/WB: rd = x3
+
+DATA VALUES:
+  Decode: rs1_data = 0x1, rs2_data = 0x4
+  ID/EX: rs1_data = 0x1, rs2_data = 0x2
+  EX/MEM: alu_result = 0x8, rs2_data = 0x0
+  MEM/WB: wb_data = 0x4
+
+REGISTER CHANGES:
+  x2: 0x0 -> 0x2
+
+=============== CYCLE 7 ===============
+PC = 0x0000001c
+
+PIPELINE STATE:
+  IF/ID: R-TYPE x5, x1, x2 (0x20f2b3)
+  ID/EX: SUB x4, x1, x3 (0x40308233)
+  EX/MEM: ADD x3, x1, x2 (0x2081b3)
+  MEM/WB: ADDI x4, x0, 8 (0x800213)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  >> FORWARD_B changed to 2 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x1, rs2 = x2
+  ID/EX: rs1 = x1, rs2 = x3, rd = x4
+  EX/MEM: rd = x3
+  MEM/WB: rd = x4
+
+DATA VALUES:
+  Decode: rs1_data = 0x1, rs2_data = 0x2
+  ID/EX: rs1_data = 0x1, rs2_data = 0x4
+  EX/MEM: alu_result = 0x3, rs2_data = 0x2
+  MEM/WB: wb_data = 0x8
+
+REGISTER CHANGES:
+  x3: 0x0 -> 0x4
+
+=============== CYCLE 8 ===============
+PC = 0x00000020
+
+PIPELINE STATE:
+  IF/ID: R-TYPE x6, x1, x2 (0x20e333)
+  ID/EX: R-TYPE x5, x1, x2 (0x20f2b3)
+  EX/MEM: SUB x4, x1, x3 (0x40308233)
+  MEM/WB: ADD x3, x1, x2 (0x2081b3)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  >> FORWARD_B changed to 0 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x1, rs2 = x2
+  ID/EX: rs1 = x1, rs2 = x2, rd = x5
+  EX/MEM: rd = x4
+  MEM/WB: rd = x3
+
+DATA VALUES:
+  Decode: rs1_data = 0x1, rs2_data = 0x2
+  ID/EX: rs1_data = 0x1, rs2_data = 0x2
+  EX/MEM: alu_result = 0xfffffffe, rs2_data = 0x3
+  MEM/WB: wb_data = 0x3
+
+REGISTER CHANGES:
+  x4: 0x0 -> 0x8
+
+=============== CYCLE 9 ===============
+PC = 0x00000024
+
+PIPELINE STATE:
+  IF/ID: R-TYPE x7, x1, x2 (0x20c3b3)
+  ID/EX: R-TYPE x6, x1, x2 (0x20e333)
+  EX/MEM: R-TYPE x5, x1, x2 (0x20f2b3)
+  MEM/WB: SUB x4, x1, x3 (0x40308233)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x1, rs2 = x2
+  ID/EX: rs1 = x1, rs2 = x2, rd = x6
+  EX/MEM: rd = x5
+  MEM/WB: rd = x4
+
+DATA VALUES:
+  Decode: rs1_data = 0x1, rs2_data = 0x2
+  ID/EX: rs1_data = 0x1, rs2_data = 0x2
+  EX/MEM: alu_result = 0x0, rs2_data = 0x2
+  MEM/WB: wb_data = 0xfffffffe
+
+REGISTER CHANGES:
+  x3: 0x4 -> 0x3
+
+=============== CYCLE a ===============
+PC = 0x00000028
+
+PIPELINE STATE:
+  IF/ID: SLLI x8, x1, 1 (0x109413)
+  ID/EX: R-TYPE x7, x1, x2 (0x20c3b3)
+  EX/MEM: R-TYPE x6, x1, x2 (0x20e333)
+  MEM/WB: R-TYPE x5, x1, x2 (0x20f2b3)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x1, rs2 = x1
+  ID/EX: rs1 = x1, rs2 = x2, rd = x7
+  EX/MEM: rd = x6
+  MEM/WB: rd = x5
+
+DATA VALUES:
+  Decode: rs1_data = 0x1, rs2_data = 0x1
+  ID/EX: rs1_data = 0x1, rs2_data = 0x2
+  EX/MEM: alu_result = 0x3, rs2_data = 0x2
+  MEM/WB: wb_data = 0x0
+
+REGISTER CHANGES:
+  x4: 0x8 -> 0xfffffffe
+
+=============== CYCLE b ===============
+PC = 0x0000002c
+
+PIPELINE STATE:
+  IF/ID: I-TYPE x9, x1 (0x20d493)
+  ID/EX: SLLI x8, x1, 1 (0x109413)
+  EX/MEM: R-TYPE x7, x1, x2 (0x20c3b3)
+  MEM/WB: R-TYPE x6, x1, x2 (0x20e333)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x1, rs2 = x2
+  ID/EX: rs1 = x1, rs2 = x1, rd = x8
+  EX/MEM: rd = x7
+  MEM/WB: rd = x6
+
+DATA VALUES:
+  Decode: rs1_data = 0x1, rs2_data = 0x2
+  ID/EX: rs1_data = 0x1, rs2_data = 0x1
+  EX/MEM: alu_result = 0x3, rs2_data = 0x2
+  MEM/WB: wb_data = 0x3
+
+REGISTER CHANGES:
+
+=============== CYCLE c ===============
+PC = 0x00000030
+
+PIPELINE STATE:
+  IF/ID: I-TYPE x10, x1 (0x4020d513)
+  ID/EX: I-TYPE x9, x1 (0x20d493)
+  EX/MEM: SLLI x8, x1, 1 (0x109413)
+  MEM/WB: R-TYPE x7, x1, x2 (0x20c3b3)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x1, rs2 = x2
+  ID/EX: rs1 = x1, rs2 = x2, rd = x9
+  EX/MEM: rd = x8
+  MEM/WB: rd = x7
+
+DATA VALUES:
+  Decode: rs1_data = 0x1, rs2_data = 0x2
+  ID/EX: rs1_data = 0x1, rs2_data = 0x2
+  EX/MEM: alu_result = 0x2, rs2_data = 0x1
+  MEM/WB: wb_data = 0x3
+
+REGISTER CHANGES:
+  x6: 0x0 -> 0x3
+
+=============== CYCLE d ===============
+PC = 0x00000034
+
+PIPELINE STATE:
+  IF/ID: STORE x3, 0(x0) (0x302023)
+  ID/EX: I-TYPE x10, x1 (0x4020d513)
+  EX/MEM: I-TYPE x9, x1 (0x20d493)
+  MEM/WB: SLLI x8, x1, 1 (0x109413)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x3
+  ID/EX: rs1 = x1, rs2 = x2, rd = xa
+  EX/MEM: rd = x9
+  MEM/WB: rd = x8
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x3
+  ID/EX: rs1_data = 0x1, rs2_data = 0x2
+  EX/MEM: alu_result = 0x0, rs2_data = 0x2
+  MEM/WB: wb_data = 0x2
+
+REGISTER CHANGES:
+  x7: 0x0 -> 0x3
+
+=============== CYCLE e ===============
+PC = 0x00000038
+
+PIPELINE STATE:
+  IF/ID: STORE x4, 4(x0) (0x402223)
+  ID/EX: STORE x3, 0(x0) (0x302023)
+  EX/MEM: I-TYPE x10, x1 (0x4020d513)
+  MEM/WB: I-TYPE x9, x1 (0x20d493)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 0, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 1, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x4
+  ID/EX: rs1 = x0, rs2 = x3, rd = x0
+  EX/MEM: rd = xa
+  MEM/WB: rd = x9
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0xfffffffe
+  ID/EX: rs1_data = 0x0, rs2_data = 0x3
+  EX/MEM: alu_result = 0x0, rs2_data = 0x2
+  MEM/WB: wb_data = 0x0
+
+REGISTER CHANGES:
+  x8: 0x0 -> 0x2
+
+!!! STORE INSTRUCTION DETECTED !!!
+  In ID/EX stage: rs2 = x3, data = 0x3, forward_b = 0
+  !!! STORE USING x3 !!! Current value = 0x3
+  If forward_b = 0: Would use 0x3
+  If forward_b = 1: Would use 0x0
+  If forward_b = 2: Would use 0x0
+
+=============== CYCLE f ===============
+PC = 0x0000003c
+
+PIPELINE STATE:
+  IF/ID: LOAD x11, 0(x0) (0x2583)
+  ID/EX: STORE x4, 4(x0) (0x402223)
+  EX/MEM: STORE x3, 0(x0) (0x302023)
+  MEM/WB: I-TYPE x10, x1 (0x4020d513)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 0, EX/MEM Reg Write = 0, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 1, EX/MEM Mem Write = 1
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x0
+  ID/EX: rs1 = x0, rs2 = x4, rd = x4
+  EX/MEM: rd = x0
+  MEM/WB: rd = xa
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0xfffffffe
+  EX/MEM: alu_result = 0x0, rs2_data = 0x3
+  MEM/WB: wb_data = 0x0
+
+REGISTER CHANGES:
+
+!!! STORE INSTRUCTION DETECTED !!!
+  In ID/EX stage: rs2 = x4, data = 0xfffffffe, forward_b = 0
+  In EX/MEM stage: rs2 = x4, data actually being stored = 0x3
+
+=============== CYCLE 10 ===============
+PC = 0x00000040
+
+PIPELINE STATE:
+  IF/ID: ADDI x11, x0, 11 (0xb00593)
+  ID/EX: LOAD x11, 0(x0) (0x2583)
+  EX/MEM: STORE x4, 4(x0) (0x402223)
+  MEM/WB: STORE x3, 0(x0) (0x302023)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 0, MEM/WB Reg Write = 0
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 1
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = xb
+  ID/EX: rs1 = x0, rs2 = x0, rd = xb
+  EX/MEM: rd = x4
+  MEM/WB: rd = x0
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x4, rs2_data = 0xfffffffe
+  MEM/WB: wb_data = 0x0
+
+REGISTER CHANGES:
+
+!!! STORE INSTRUCTION DETECTED !!!
+  In EX/MEM stage: rs2 = x0, data actually being stored = 0xfffffffe
+
+=============== CYCLE 11 ===============
+PC = 0x00000044
+
+PIPELINE STATE:
+  IF/ID: LOAD x12, 4(x0) (0x402603)
+  ID/EX: ADDI x11, x0, 11 (0xb00593)
+  EX/MEM: LOAD x11, 0(x0) (0x2583)
+  MEM/WB: STORE x4, 4(x0) (0x402223)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 0
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  >> FORWARD_B changed to 2 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x4
+  ID/EX: rs1 = x0, rs2 = xb, rd = xb
+  EX/MEM: rd = xb
+  MEM/WB: rd = x4
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0xfffffffe
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x0, rs2_data = 0x0
+  MEM/WB: wb_data = 0x4
+
+REGISTER CHANGES:
+
+=============== CYCLE 12 ===============
+PC = 0x00000048
+
+PIPELINE STATE:
+  IF/ID: ADD x12, x11, x12 (0xc58633)
+  ID/EX: LOAD x12, 4(x0) (0x402603)
+  EX/MEM: ADDI x11, x0, 11 (0xb00593)
+  MEM/WB: LOAD x11, 0(x0) (0x2583)
+
+CONTROL SIGNALS:
+  Stall = 1, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  >> FORWARD_B changed to 0 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = xb, rs2 = xc
+  ID/EX: rs1 = x0, rs2 = x4, rd = xc
+  EX/MEM: rd = xb
+  MEM/WB: rd = xb
+
+DATA VALUES:
+  Decode: rs1_data = 0x3, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0xfffffffe
+  EX/MEM: alu_result = 0xb, rs2_data = 0x0
+  MEM/WB: wb_data = 0x3
+
+REGISTER CHANGES:
+
+=============== CYCLE 13 ===============
+PC = 0x00000048
+
+PIPELINE STATE:
+  IF/ID: ADD x12, x11, x12 (0xc58633)
+  ID/EX: ADDI x0, x0, 0 (0x13)
+  EX/MEM: LOAD x12, 4(x0) (0x402603)
+  MEM/WB: ADDI x11, x0, 11 (0xb00593)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 0, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = xb, rs2 = xc
+  ID/EX: rs1 = x0, rs2 = x4, rd = xc
+  EX/MEM: rd = xc
+  MEM/WB: rd = xb
+
+DATA VALUES:
+  Decode: rs1_data = 0xb, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0xfffffffe
+  EX/MEM: alu_result = 0x4, rs2_data = 0xfffffffe
+  MEM/WB: wb_data = 0xb
+
+REGISTER CHANGES:
+  xb: 0x0 -> 0x3
+
+=============== CYCLE 14 ===============
+PC = 0x0000004c
+
+PIPELINE STATE:
+  IF/ID: STORE x12, 8(x0) (0xc02423)
+  ID/EX: ADD x12, x11, x12 (0xc58633)
+  EX/MEM: ADDI x0, x0, 0 (0x13)
+  MEM/WB: LOAD x12, 4(x0) (0x402603)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 0, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  >> FORWARD_B changed to 1 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = xc
+  ID/EX: rs1 = xb, rs2 = xc, rd = xc
+  EX/MEM: rd = xc
+  MEM/WB: rd = xc
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0xfffffffe
+  ID/EX: rs1_data = 0xb, rs2_data = 0x0
+  EX/MEM: alu_result = 0x4, rs2_data = 0xfffffffe
+  MEM/WB: wb_data = 0xfffffffe
+
+REGISTER CHANGES:
+  xb: 0x3 -> 0xb
+
+=============== CYCLE 15 ===============
+PC = 0x00000050
+
+PIPELINE STATE:
+  IF/ID: LOAD x13, 8(x0) (0x802683)
+  ID/EX: STORE x12, 8(x0) (0xc02423)
+  EX/MEM: ADD x12, x11, x12 (0xc58633)
+  MEM/WB: ADDI x0, x0, 0 (0x13)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 0, EX/MEM Reg Write = 1, MEM/WB Reg Write = 0
+  ID/EX Mem Write = 1, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  >> FORWARD_B changed to 2 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x8
+  ID/EX: rs1 = x0, rs2 = xc, rd = x8
+  EX/MEM: rd = xc
+  MEM/WB: rd = xc
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x2
+  ID/EX: rs1_data = 0x0, rs2_data = 0xfffffffe
+  EX/MEM: alu_result = 0x9, rs2_data = 0xfffffffe
+  MEM/WB: wb_data = 0x0
+
+REGISTER CHANGES:
+  xc: 0x0 -> 0xfffffffe
+
+!!! STORE INSTRUCTION DETECTED !!!
+  In ID/EX stage: rs2 = xc, data = 0xfffffffe, forward_b = 2
+
+=============== CYCLE 16 ===============
+PC = 0x00000054
+
+PIPELINE STATE:
+  IF/ID: ADD x13, x2, x13 (0xd106b3)
+  ID/EX: LOAD x13, 8(x0) (0x802683)
+  EX/MEM: STORE x12, 8(x0) (0xc02423)
+  MEM/WB: ADD x12, x11, x12 (0xc58633)
+
+CONTROL SIGNALS:
+  Stall = 1, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 0, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 1
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  >> FORWARD_B changed to 0 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x2, rs2 = xd
+  ID/EX: rs1 = x0, rs2 = x8, rd = xd
+  EX/MEM: rd = x8
+  MEM/WB: rd = xc
+
+DATA VALUES:
+  Decode: rs1_data = 0x2, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x2
+  EX/MEM: alu_result = 0x8, rs2_data = 0x9
+  MEM/WB: wb_data = 0x9
+
+REGISTER CHANGES:
+
+!!! STORE INSTRUCTION DETECTED !!!
+  In EX/MEM stage: rs2 = x8, data actually being stored = 0x9
+
+=============== CYCLE 17 ===============
+PC = 0x00000054
+
+PIPELINE STATE:
+  IF/ID: ADD x13, x2, x13 (0xd106b3)
+  ID/EX: ADDI x0, x0, 0 (0x13)
+  EX/MEM: LOAD x13, 8(x0) (0x802683)
+  MEM/WB: STORE x12, 8(x0) (0xc02423)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 0, EX/MEM Reg Write = 1, MEM/WB Reg Write = 0
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x2, rs2 = xd
+  ID/EX: rs1 = x0, rs2 = x8, rd = xd
+  EX/MEM: rd = xd
+  MEM/WB: rd = x8
+
+DATA VALUES:
+  Decode: rs1_data = 0x2, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x2
+  EX/MEM: alu_result = 0x8, rs2_data = 0x2
+  MEM/WB: wb_data = 0x8
+
+REGISTER CHANGES:
+  xc: 0xfffffffe -> 0x9
+
+=============== CYCLE 18 ===============
+PC = 0x00000058
+
+PIPELINE STATE:
+  IF/ID: STORE x13, 12(x0) (0xd02623)
+  ID/EX: ADD x13, x2, x13 (0xd106b3)
+  EX/MEM: ADDI x0, x0, 0 (0x13)
+  MEM/WB: LOAD x13, 8(x0) (0x802683)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 0, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  >> FORWARD_B changed to 1 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = xd
+  ID/EX: rs1 = x2, rs2 = xd, rd = xd
+  EX/MEM: rd = xd
+  MEM/WB: rd = xd
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x9
+  ID/EX: rs1_data = 0x2, rs2_data = 0x0
+  EX/MEM: alu_result = 0x8, rs2_data = 0x2
+  MEM/WB: wb_data = 0x9
+
+REGISTER CHANGES:
+
+=============== CYCLE 19 ===============
+PC = 0x0000005c
+
+PIPELINE STATE:
+  IF/ID: ADDI x14, x0, 253 (0xfd00713)
+  ID/EX: STORE x13, 12(x0) (0xd02623)
+  EX/MEM: ADD x13, x2, x13 (0xd106b3)
+  MEM/WB: ADDI x0, x0, 0 (0x13)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 0, EX/MEM Reg Write = 1, MEM/WB Reg Write = 0
+  ID/EX Mem Write = 1, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  >> FORWARD_B changed to 2 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x1d
+  ID/EX: rs1 = x0, rs2 = xd, rd = xc
+  EX/MEM: rd = xd
+  MEM/WB: rd = xd
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x9
+  EX/MEM: alu_result = 0xb, rs2_data = 0x9
+  MEM/WB: wb_data = 0x0
+
+REGISTER CHANGES:
+  xd: 0x0 -> 0x9
+
+!!! STORE INSTRUCTION DETECTED !!!
+  In ID/EX stage: rs2 = xd, data = 0x9, forward_b = 2
+
+=============== CYCLE 1a ===============
+PC = 0x00000060
+
+PIPELINE STATE:
+  IF/ID: STORE x14, 16(x0) (0xe02823)
+  ID/EX: ADDI x14, x0, 253 (0xfd00713)
+  EX/MEM: STORE x13, 12(x0) (0xd02623)
+  MEM/WB: ADD x13, x2, x13 (0xd106b3)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 0, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 1
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  >> FORWARD_B changed to 0 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = xe
+  ID/EX: rs1 = x0, rs2 = x1d, rd = xe
+  EX/MEM: rd = xc
+  MEM/WB: rd = xd
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0xc, rs2_data = 0xb
+  MEM/WB: wb_data = 0xb
+
+REGISTER CHANGES:
+
+!!! STORE INSTRUCTION DETECTED !!!
+  In EX/MEM stage: rs2 = x1d, data actually being stored = 0xb
+
+=============== CYCLE 1b ===============
+PC = 0x00000064
+
+PIPELINE STATE:
+  IF/ID: LOAD x15, 16(x0) (0x1000783)
+  ID/EX: STORE x14, 16(x0) (0xe02823)
+  EX/MEM: ADDI x14, x0, 253 (0xfd00713)
+  MEM/WB: STORE x13, 12(x0) (0xd02623)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 0, EX/MEM Reg Write = 1, MEM/WB Reg Write = 0
+  ID/EX Mem Write = 1, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  >> FORWARD_B changed to 2 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x10
+  ID/EX: rs1 = x0, rs2 = xe, rd = x10
+  EX/MEM: rd = xe
+  MEM/WB: rd = xc
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0xfd, rs2_data = 0x0
+  MEM/WB: wb_data = 0xc
+
+REGISTER CHANGES:
+  xd: 0x9 -> 0xb
+
+!!! STORE INSTRUCTION DETECTED !!!
+  In ID/EX stage: rs2 = xe, data = 0x0, forward_b = 2
+
+=============== CYCLE 1c ===============
+PC = 0x00000068
+
+PIPELINE STATE:
+  IF/ID: LOAD x16, 16(x0) (0x1004803)
+  ID/EX: LOAD x15, 16(x0) (0x1000783)
+  EX/MEM: STORE x14, 16(x0) (0xe02823)
+  MEM/WB: ADDI x14, x0, 253 (0xfd00713)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 0, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 1
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  >> FORWARD_B changed to 0 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x10
+  ID/EX: rs1 = x0, rs2 = x10, rd = xf
+  EX/MEM: rd = x10
+  MEM/WB: rd = xe
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x10, rs2_data = 0xfd
+  MEM/WB: wb_data = 0xfd
+
+REGISTER CHANGES:
+
+!!! STORE INSTRUCTION DETECTED !!!
+  In EX/MEM stage: rs2 = x10, data actually being stored = 0xfd
+
+=============== CYCLE 1d ===============
+PC = 0x0000006c
+
+PIPELINE STATE:
+  IF/ID: UNKNOWN (0xaaaab837) (0xaaaab837)
+  ID/EX: LOAD x16, 16(x0) (0x1004803)
+  EX/MEM: LOAD x15, 16(x0) (0x1000783)
+  MEM/WB: STORE x14, 16(x0) (0xe02823)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 0
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x15, rs2 = xa
+  ID/EX: rs1 = x0, rs2 = x10, rd = x10
+  EX/MEM: rd = xf
+  MEM/WB: rd = x10
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x10, rs2_data = 0x0
+  MEM/WB: wb_data = 0x10
+
+REGISTER CHANGES:
+  xe: 0x0 -> 0xfd
+
+=============== CYCLE 1e ===============
+PC = 0x00000070
+
+PIPELINE STATE:
+  IF/ID: STORE x16, 20(x0) (0x1002a23)
+  ID/EX: UNKNOWN (0xaaaab837) (0xaaaab837)
+  EX/MEM: LOAD x16, 16(x0) (0x1004803)
+  MEM/WB: LOAD x15, 16(x0) (0x1000783)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x10
+  ID/EX: rs1 = x15, rs2 = xa, rd = x10
+  EX/MEM: rd = x10
+  MEM/WB: rd = xf
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x10, rs2_data = 0x0
+  MEM/WB: wb_data = 0xfffffffd
+
+REGISTER CHANGES:
+
+=============== CYCLE 1f ===============
+PC = 0x00000074
+
+PIPELINE STATE:
+  IF/ID: LOAD x17, 20(x0) (0x1401883)
+  ID/EX: STORE x16, 20(x0) (0x1002a23)
+  EX/MEM: UNKNOWN (0xaaaab837) (0xaaaab837)
+  MEM/WB: LOAD x16, 16(x0) (0x1004803)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 0, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 1, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  >> FORWARD_B changed to 2 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x14
+  ID/EX: rs1 = x0, rs2 = x10, rd = x14
+  EX/MEM: rd = x10
+  MEM/WB: rd = x10
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0xaaaab000, rs2_data = 0x0
+  MEM/WB: wb_data = 0xfffffffd
+
+REGISTER CHANGES:
+  xf: 0x0 -> 0xfffffffd
+
+!!! STORE INSTRUCTION DETECTED !!!
+  In ID/EX stage: rs2 = x10, data = 0x0, forward_b = 2
+
+=============== CYCLE 20 ===============
+PC = 0x00000078
+
+PIPELINE STATE:
+  IF/ID: LOAD x18, 20(x0) (0x1405903)
+  ID/EX: LOAD x17, 20(x0) (0x1401883)
+  EX/MEM: STORE x16, 20(x0) (0x1002a23)
+  MEM/WB: UNKNOWN (0xaaaab837) (0xaaaab837)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 0, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 1
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  >> FORWARD_B changed to 0 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x14
+  ID/EX: rs1 = x0, rs2 = x14, rd = x11
+  EX/MEM: rd = x14
+  MEM/WB: rd = x10
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x14, rs2_data = 0xaaaab000
+  MEM/WB: wb_data = 0xaaaab000
+
+REGISTER CHANGES:
+  x10: 0x0 -> 0xfffffffd
+
+!!! STORE INSTRUCTION DETECTED !!!
+  In EX/MEM stage: rs2 = x14, data actually being stored = 0xaaaab000
+
+=============== CYCLE 21 ===============
+PC = 0x0000007c
+
+PIPELINE STATE:
+  IF/ID: ADDI x19, x0, 3 (0x300993)
+  ID/EX: LOAD x18, 20(x0) (0x1405903)
+  EX/MEM: LOAD x17, 20(x0) (0x1401883)
+  MEM/WB: STORE x16, 20(x0) (0x1002a23)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 0
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x3
+  ID/EX: rs1 = x0, rs2 = x14, rd = x12
+  EX/MEM: rd = x11
+  MEM/WB: rd = x14
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x3
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x14, rs2_data = 0x0
+  MEM/WB: wb_data = 0x14
+
+REGISTER CHANGES:
+  x10: 0xfffffffd -> 0xaaaab000
+
+=============== CYCLE 22 ===============
+PC = 0x00000080
+
+PIPELINE STATE:
+  IF/ID: ADDI x20, x0, 5 (0x500a13)
+  ID/EX: ADDI x19, x0, 3 (0x300993)
+  EX/MEM: LOAD x18, 20(x0) (0x1405903)
+  MEM/WB: LOAD x17, 20(x0) (0x1401883)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x5
+  ID/EX: rs1 = x0, rs2 = x3, rd = x13
+  EX/MEM: rd = x12
+  MEM/WB: rd = x11
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x3
+  EX/MEM: alu_result = 0x14, rs2_data = 0x0
+  MEM/WB: wb_data = 0xffffb000
+
+REGISTER CHANGES:
+
+=============== CYCLE 23 ===============
+PC = 0x00000084
+
+PIPELINE STATE:
+  IF/ID: BRANCH (0x1498a63)
+  ID/EX: ADDI x20, x0, 5 (0x500a13)
+  EX/MEM: ADDI x19, x0, 3 (0x300993)
+  MEM/WB: LOAD x18, 20(x0) (0x1405903)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x13, rs2 = x14
+  ID/EX: rs1 = x0, rs2 = x5, rd = x14
+  EX/MEM: rd = x13
+  MEM/WB: rd = x12
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x3, rs2_data = 0x3
+  MEM/WB: wb_data = 0xffffb000
+
+REGISTER CHANGES:
+  x11: 0x0 -> 0xffffb000
+
+=============== CYCLE 24 ===============
+PC = 0x00000088
+
+PIPELINE STATE:
+  IF/ID: ADDI x21, x0, 20 (0x1400a93)
+  ID/EX: BRANCH (0x1498a63)
+  EX/MEM: ADDI x20, x0, 5 (0x500a13)
+  MEM/WB: ADDI x19, x0, 3 (0x300993)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 0, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  >> FORWARD_A changed to 1 <<
+  >> FORWARD_B changed to 2 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x14
+  ID/EX: rs1 = x13, rs2 = x14, rd = x14
+  EX/MEM: rd = x14
+  MEM/WB: rd = x13
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x5, rs2_data = 0x0
+  MEM/WB: wb_data = 0x3
+
+REGISTER CHANGES:
+  x12: 0x0 -> 0xffffb000
+
+=============== CYCLE 25 ===============
+PC = 0x0000008c
+
+PIPELINE STATE:
+  IF/ID: BRANCH (0x1499463)
+  ID/EX: ADDI x21, x0, 20 (0x1400a93)
+  EX/MEM: BRANCH (0x1498a63)
+  MEM/WB: ADDI x20, x0, 5 (0x500a13)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 0, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  >> FORWARD_A changed to 0 <<
+  >> FORWARD_B changed to 1 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x13, rs2 = x14
+  ID/EX: rs1 = x0, rs2 = x14, rd = x15
+  EX/MEM: rd = x14
+  MEM/WB: rd = x14
+
+DATA VALUES:
+  Decode: rs1_data = 0x3, rs2_data = 0x5
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0xffffffef, rs2_data = 0x5
+  MEM/WB: wb_data = 0x5
+
+REGISTER CHANGES:
+  x13: 0x0 -> 0x3
+
+=============== CYCLE 26 ===============
+PC = 0x00000090
+
+PIPELINE STATE:
+  IF/ID: ADDI x22, x0, 4095 (0xfff00b13)
+  ID/EX: BRANCH (0x1499463)
+  EX/MEM: ADDI x21, x0, 20 (0x1400a93)
+  MEM/WB: BRANCH (0x1498a63)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 0, EX/MEM Reg Write = 1, MEM/WB Reg Write = 0
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  >> FORWARD_B changed to 0 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x1f
+  ID/EX: rs1 = x13, rs2 = x14, rd = x8
+  EX/MEM: rd = x15
+  MEM/WB: rd = x14
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x3, rs2_data = 0x5
+  EX/MEM: alu_result = 0x14, rs2_data = 0x5
+  MEM/WB: wb_data = 0xffffffef
+
+REGISTER CHANGES:
+  x14: 0x0 -> 0x5
+
+=============== CYCLE 27 ===============
+PC = 0x00000094
+
+PIPELINE STATE:
+  IF/ID: ADDI x22, x0, 10 (0xa00b13)
+  ID/EX: ADDI x22, x0, 4095 (0xfff00b13)
+  EX/MEM: BRANCH (0x1499463)
+  MEM/WB: ADDI x21, x0, 20 (0x1400a93)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 1
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 0, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = xa
+  ID/EX: rs1 = x0, rs2 = x1f, rd = x16
+  EX/MEM: rd = x8
+  MEM/WB: rd = x15
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0xfffffffb, rs2_data = 0x5
+  MEM/WB: wb_data = 0x14
+
+REGISTER CHANGES:
+
+=============== CYCLE 28 ===============
+PC = 0x00000090
+
+PIPELINE STATE:
+  IF/ID: ADDI x0, x0, 0 (0x13)
+  ID/EX: ADDI x0, x0, 0 (0x13)
+  EX/MEM: ADDI x22, x0, 4095 (0xfff00b13)
+  MEM/WB: BRANCH (0x1499463)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 0, EX/MEM Reg Write = 1, MEM/WB Reg Write = 0
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x0
+  ID/EX: rs1 = x0, rs2 = xa, rd = x0
+  EX/MEM: rd = x16
+  MEM/WB: rd = x8
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0xffffffff, rs2_data = 0x0
+  MEM/WB: wb_data = 0xfffffffb
+
+REGISTER CHANGES:
+  x15: 0x0 -> 0x14
+
+=============== CYCLE 29 ===============
+PC = 0x00000094
+
+PIPELINE STATE:
+  IF/ID: ADDI x22, x0, 10 (0xa00b13)
+  ID/EX: ADDI x0, x0, 0 (0x13)
+  EX/MEM: ADDI x0, x0, 0 (0x13)
+  MEM/WB: ADDI x22, x0, 4095 (0xfff00b13)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 0, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = xa
+  ID/EX: rs1 = x0, rs2 = x0, rd = x0
+  EX/MEM: rd = x0
+  MEM/WB: rd = x16
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x0, rs2_data = 0x0
+  MEM/WB: wb_data = 0xffffffff
+
+REGISTER CHANGES:
+
+=============== CYCLE 2a ===============
+PC = 0x00000098
+
+PIPELINE STATE:
+  IF/ID: LOAD x23, 16(x0) (0x1002b83)
+  ID/EX: ADDI x22, x0, 10 (0xa00b13)
+  EX/MEM: ADDI x0, x0, 0 (0x13)
+  MEM/WB: ADDI x0, x0, 0 (0x13)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 0
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x10
+  ID/EX: rs1 = x0, rs2 = xa, rd = x16
+  EX/MEM: rd = x0
+  MEM/WB: rd = x0
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0xaaaab000
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x0, rs2_data = 0x0
+  MEM/WB: wb_data = 0x0
+
+REGISTER CHANGES:
+  x16: 0x0 -> 0xffffffff
+
+=============== CYCLE 2b ===============
+PC = 0x0000009c
+
+PIPELINE STATE:
+  IF/ID: ADDI x24, x20, 21 (0x15a0c13)
+  ID/EX: LOAD x23, 16(x0) (0x1002b83)
+  EX/MEM: ADDI x22, x0, 10 (0xa00b13)
+  MEM/WB: ADDI x0, x0, 0 (0x13)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x14, rs2 = x15
+  ID/EX: rs1 = x0, rs2 = x10, rd = x17
+  EX/MEM: rd = x16
+  MEM/WB: rd = x0
+
+DATA VALUES:
+  Decode: rs1_data = 0x5, rs2_data = 0x14
+  ID/EX: rs1_data = 0x0, rs2_data = 0xaaaab000
+  EX/MEM: alu_result = 0xa, rs2_data = 0x0
+  MEM/WB: wb_data = 0x0
+
+REGISTER CHANGES:
+
+=============== CYCLE 2c ===============
+PC = 0x000000a0
+
+PIPELINE STATE:
+  IF/ID: ADDI x25, x24, 24 (0x18c0c93)
+  ID/EX: ADDI x24, x20, 21 (0x15a0c13)
+  EX/MEM: LOAD x23, 16(x0) (0x1002b83)
+  MEM/WB: ADDI x22, x0, 10 (0xa00b13)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x18, rs2 = x18
+  ID/EX: rs1 = x14, rs2 = x15, rd = x18
+  EX/MEM: rd = x17
+  MEM/WB: rd = x16
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x5, rs2_data = 0x14
+  EX/MEM: alu_result = 0x10, rs2_data = 0xaaaab000
+  MEM/WB: wb_data = 0xa
+
+REGISTER CHANGES:
+
+=============== CYCLE 2d ===============
+PC = 0x000000a4
+
+PIPELINE STATE:
+  IF/ID: ADDI x26, x25, 25 (0x19c8d13)
+  ID/EX: ADDI x25, x24, 24 (0x18c0c93)
+  EX/MEM: ADDI x24, x20, 21 (0x15a0c13)
+  MEM/WB: LOAD x23, 16(x0) (0x1002b83)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  >> FORWARD_A changed to 2 <<
+  >> FORWARD_B changed to 2 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x19, rs2 = x19
+  ID/EX: rs1 = x18, rs2 = x18, rd = x19
+  EX/MEM: rd = x18
+  MEM/WB: rd = x17
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x1a, rs2_data = 0x14
+  MEM/WB: wb_data = 0xfd
+
+REGISTER CHANGES:
+  x16: 0xffffffff -> 0xa
+
+=============== CYCLE 2e ===============
+PC = 0x000000a8
+
+PIPELINE STATE:
+  IF/ID: ADDI x27, x26, 26 (0x1ad0d93)
+  ID/EX: ADDI x26, x25, 25 (0x19c8d13)
+  EX/MEM: ADDI x25, x24, 24 (0x18c0c93)
+  MEM/WB: ADDI x24, x20, 21 (0x15a0c13)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 2
+  FORWARD_B = 2
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x1a, rs2 = x1a
+  ID/EX: rs1 = x19, rs2 = x19, rd = x1a
+  EX/MEM: rd = x19
+  MEM/WB: rd = x18
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x32, rs2_data = 0x1a
+  MEM/WB: wb_data = 0x1a
+
+REGISTER CHANGES:
+  x17: 0x0 -> 0xfd
+
+=============== CYCLE 2f ===============
+PC = 0x000000ac
+
+PIPELINE STATE:
+  IF/ID: STORE x27, 28(x0) (0x1b02e23)
+  ID/EX: ADDI x27, x26, 26 (0x1ad0d93)
+  EX/MEM: ADDI x26, x25, 25 (0x19c8d13)
+  MEM/WB: ADDI x25, x24, 24 (0x18c0c93)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 2
+  FORWARD_B = 2
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x1b
+  ID/EX: rs1 = x1a, rs2 = x1a, rd = x1b
+  EX/MEM: rd = x1a
+  MEM/WB: rd = x19
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x4b, rs2_data = 0x32
+  MEM/WB: wb_data = 0x32
+
+REGISTER CHANGES:
+  x18: 0x0 -> 0x1a
+
+=============== CYCLE 30 ===============
+PC = 0x000000b0
+
+PIPELINE STATE:
+  IF/ID: LOAD x29, 28(x0) (0x1c02e83)
+  ID/EX: STORE x27, 28(x0) (0x1b02e23)
+  EX/MEM: ADDI x27, x26, 26 (0x1ad0d93)
+  MEM/WB: ADDI x26, x25, 25 (0x19c8d13)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 0, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 1, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  >> FORWARD_A changed to 0 <<
+  FORWARD_B = 2
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x1c
+  ID/EX: rs1 = x0, rs2 = x1b, rd = x1c
+  EX/MEM: rd = x1b
+  MEM/WB: rd = x1a
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x65, rs2_data = 0x4b
+  MEM/WB: wb_data = 0x4b
+
+REGISTER CHANGES:
+  x19: 0x0 -> 0x32
+
+!!! STORE INSTRUCTION DETECTED !!!
+  In ID/EX stage: rs2 = x1b, data = 0x0, forward_b = 2
+
+=============== CYCLE 31 ===============
+PC = 0x000000b4
+
+PIPELINE STATE:
+  IF/ID: ADDI x28, x0, 29 (0x1d00e13)
+  ID/EX: LOAD x29, 28(x0) (0x1c02e83)
+  EX/MEM: STORE x27, 28(x0) (0x1b02e23)
+  MEM/WB: ADDI x27, x26, 26 (0x1ad0d93)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 0, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 1
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  >> FORWARD_B changed to 0 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x1d
+  ID/EX: rs1 = x0, rs2 = x1c, rd = x1d
+  EX/MEM: rd = x1c
+  MEM/WB: rd = x1b
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x1c, rs2_data = 0x65
+  MEM/WB: wb_data = 0x65
+
+REGISTER CHANGES:
+  x1a: 0x0 -> 0x4b
+
+!!! STORE INSTRUCTION DETECTED !!!
+  In EX/MEM stage: rs2 = x1c, data actually being stored = 0x65
+
+=============== CYCLE 32 ===============
+PC = 0x000000b8
+
+PIPELINE STATE:
+  IF/ID: STORE x28, 30(x0) (0x1c02f23)
+  ID/EX: ADDI x28, x0, 29 (0x1d00e13)
+  EX/MEM: LOAD x29, 28(x0) (0x1c02e83)
+  MEM/WB: STORE x27, 28(x0) (0x1b02e23)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 0
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  >> FORWARD_B changed to 2 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x1c
+  ID/EX: rs1 = x0, rs2 = x1d, rd = x1c
+  EX/MEM: rd = x1d
+  MEM/WB: rd = x1c
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x1c, rs2_data = 0x0
+  MEM/WB: wb_data = 0x1c
+
+REGISTER CHANGES:
+  x1b: 0x0 -> 0x65
+
+=============== CYCLE 33 ===============
+PC = 0x000000bc
+
+PIPELINE STATE:
+  IF/ID: ADDI x30, x0, 28 (0x1c00f13)
+  ID/EX: STORE x28, 30(x0) (0x1c02f23)
+  EX/MEM: ADDI x28, x0, 29 (0x1d00e13)
+  MEM/WB: LOAD x29, 28(x0) (0x1c02e83)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 0, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 1, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 2
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x1c
+  ID/EX: rs1 = x0, rs2 = x1c, rd = x1e
+  EX/MEM: rd = x1c
+  MEM/WB: rd = x1d
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x1d, rs2_data = 0x1c
+  MEM/WB: wb_data = 0x65
+
+REGISTER CHANGES:
+
+!!! STORE INSTRUCTION DETECTED !!!
+  In ID/EX stage: rs2 = x1c, data = 0x0, forward_b = 2
+
+=============== CYCLE 34 ===============
+PC = 0x000000c0
+
+PIPELINE STATE:
+  IF/ID: ADDI x31, x0, 30 (0x1e00f93)
+  ID/EX: ADDI x30, x0, 28 (0x1c00f13)
+  EX/MEM: STORE x28, 30(x0) (0x1c02f23)
+  MEM/WB: ADDI x28, x0, 29 (0x1d00e13)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 0, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 1
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  >> FORWARD_B changed to 1 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x1e
+  ID/EX: rs1 = x0, rs2 = x1c, rd = x1e
+  EX/MEM: rd = x1e
+  MEM/WB: rd = x1c
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x1e, rs2_data = 0x1d
+  MEM/WB: wb_data = 0x1d
+
+REGISTER CHANGES:
+  x1d: 0x0 -> 0x65
+
+!!! STORE INSTRUCTION DETECTED !!!
+  In EX/MEM stage: rs2 = x1c, data actually being stored = 0x1d
+
+=============== CYCLE 35 ===============
+PC = 0x000000c4
+
+PIPELINE STATE:
+  IF/ID: ADD x30, x30, x30 (0x1ef0f33)
+  ID/EX: ADDI x31, x0, 30 (0x1e00f93)
+  EX/MEM: ADDI x30, x0, 28 (0x1c00f13)
+  MEM/WB: STORE x28, 30(x0) (0x1c02f23)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 0
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  >> FORWARD_B changed to 2 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x1e, rs2 = x1e
+  ID/EX: rs1 = x0, rs2 = x1e, rd = x1f
+  EX/MEM: rd = x1e
+  MEM/WB: rd = x1e
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x1c, rs2_data = 0x1d
+  MEM/WB: wb_data = 0x1e
+
+REGISTER CHANGES:
+  x1c: 0x0 -> 0x1d
+
+=============== CYCLE 36 ===============
+PC = 0x000000c8
+
+PIPELINE STATE:
+  IF/ID: JAL x1 (0x18000ef)
+  ID/EX: ADD x30, x30, x30 (0x1ef0f33)
+  EX/MEM: ADDI x31, x0, 30 (0x1e00f93)
+  MEM/WB: ADDI x30, x0, 28 (0x1c00f13)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  >> FORWARD_A changed to 1 <<
+  >> FORWARD_B changed to 1 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x18
+  ID/EX: rs1 = x1e, rs2 = x1e, rd = x1e
+  EX/MEM: rd = x1f
+  MEM/WB: rd = x1e
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x1a
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x1e, rs2_data = 0x1c
+  MEM/WB: wb_data = 0x1c
+
+REGISTER CHANGES:
+
+=============== CYCLE 37 ===============
+PC = 0x000000cc
+
+PIPELINE STATE:
+  IF/ID: ADDI x0, x0, 0 (0x13)
+  ID/EX: JAL x1 (0x18000ef)
+  EX/MEM: ADD x30, x30, x30 (0x1ef0f33)
+  MEM/WB: ADDI x31, x0, 30 (0x1e00f93)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  >> FORWARD_A changed to 0 <<
+  >> FORWARD_B changed to 0 <<
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x0
+  ID/EX: rs1 = x0, rs2 = x18, rd = x1
+  EX/MEM: rd = x1e
+  MEM/WB: rd = x1f
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x1a
+  EX/MEM: alu_result = 0x38, rs2_data = 0x1c
+  MEM/WB: wb_data = 0x1e
+
+REGISTER CHANGES:
+  x1e: 0x0 -> 0x1c
+
+=============== CYCLE 38 ===============
+PC = 0x000000d0
+
+PIPELINE STATE:
+  IF/ID: ADDI x0, x0, 0 (0x13)
+  ID/EX: ADDI x0, x0, 0 (0x13)
+  EX/MEM: JAL x1 (0x18000ef)
+  MEM/WB: ADD x30, x30, x30 (0x1ef0f33)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x0
+  ID/EX: rs1 = x0, rs2 = x0, rd = x0
+  EX/MEM: rd = x1
+  MEM/WB: rd = x1e
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x18, rs2_data = 0x1a
+  MEM/WB: wb_data = 0x38
+
+REGISTER CHANGES:
+  x1f: 0x0 -> 0x1e
+
+=============== CYCLE 39 ===============
+PC = 0x000000dc
+
+PIPELINE STATE:
+  IF/ID: ADDI x0, x0, 0 (0x13)
+  ID/EX: ADDI x0, x0, 0 (0x13)
+  EX/MEM: ADDI x0, x0, 0 (0x13)
+  MEM/WB: JAL x1 (0x18000ef)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 0, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x0
+  ID/EX: rs1 = x0, rs2 = x0, rd = x0
+  EX/MEM: rd = x0
+  MEM/WB: rd = x1
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x0, rs2_data = 0x0
+  MEM/WB: wb_data = 0xc8
+
+REGISTER CHANGES:
+  x1e: 0x1c -> 0x38
+
+=============== CYCLE 3a ===============
+PC = 0x000000e0
+
+PIPELINE STATE:
+  IF/ID: JALR x0, x1 (0x8067)
+  ID/EX: ADDI x0, x0, 0 (0x13)
+  EX/MEM: ADDI x0, x0, 0 (0x13)
+  MEM/WB: ADDI x0, x0, 0 (0x13)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 0, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x1, rs2 = x0
+  ID/EX: rs1 = x0, rs2 = x0, rd = x0
+  EX/MEM: rd = x0
+  MEM/WB: rd = x0
+
+DATA VALUES:
+  Decode: rs1_data = 0xc8, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0x0
+  EX/MEM: alu_result = 0x0, rs2_data = 0x0
+  MEM/WB: wb_data = 0x0
+
+REGISTER CHANGES:
+  x1: 0x1 -> 0xc8
+
+=============== CYCLE 3b ===============
+PC = 0x000000e4
+
+PIPELINE STATE:
+  IF/ID: UNKNOWN (0x12345837) (0x12345837)
+  ID/EX: JALR x0, x1 (0x8067)
+  EX/MEM: ADDI x0, x0, 0 (0x13)
+  MEM/WB: ADDI x0, x0, 0 (0x13)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 0
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x8, rs2 = x3
+  ID/EX: rs1 = x1, rs2 = x0, rd = x0
+  EX/MEM: rd = x0
+  MEM/WB: rd = x0
+
+DATA VALUES:
+  Decode: rs1_data = 0x2, rs2_data = 0x3
+  ID/EX: rs1_data = 0xc8, rs2_data = 0x0
+  EX/MEM: alu_result = 0x0, rs2_data = 0x0
+  MEM/WB: wb_data = 0x0
+
+REGISTER CHANGES:
+
+=============== CYCLE 3c ===============
+PC = 0x000000e8
+
+PIPELINE STATE:
+  IF/ID: EBREAK (0x100073)
+  ID/EX: UNKNOWN (0x12345837) (0x12345837)
+  EX/MEM: JALR x0, x1 (0x8067)
+  MEM/WB: ADDI x0, x0, 0 (0x13)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 1, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x1
+  ID/EX: rs1 = x8, rs2 = x3, rd = x10
+  EX/MEM: rd = x0
+  MEM/WB: rd = x0
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0xc8
+  ID/EX: rs1_data = 0x2, rs2_data = 0x3
+  EX/MEM: alu_result = 0xc8, rs2_data = 0x0
+  MEM/WB: wb_data = 0x0
+
+REGISTER CHANGES:
+
+=============== CYCLE 3d ===============
+PC = 0x000000e8
+
+PIPELINE STATE:
+  IF/ID: ADDI x0, x0, 0 (0x13)
+  ID/EX: ADDI x0, x0, 0 (0x13)
+  EX/MEM: UNKNOWN (0x12345837) (0x12345837)
+  MEM/WB: JALR x0, x1 (0x8067)
+
+CONTROL SIGNALS:
+  Stall = 0, PC Write = 0, Branch Taken = 0
+  ID/EX Reg Write = 0, EX/MEM Reg Write = 1, MEM/WB Reg Write = 1
+  ID/EX Mem Write = 0, EX/MEM Mem Write = 0
+
+FORWARDING SIGNALS:
+  FORWARD_A = 0
+  FORWARD_B = 0
+
+REGISTER ADDRESSES:
+  Decode: rs1 = x0, rs2 = x0
+  ID/EX: rs1 = x0, rs2 = x1, rd = x0
+  EX/MEM: rd = x10
+  MEM/WB: rd = x0
+
+DATA VALUES:
+  Decode: rs1_data = 0x0, rs2_data = 0x0
+  ID/EX: rs1_data = 0x0, rs2_data = 0xc8
+  EX/MEM: alu_result = 0x12345002, rs2_data = 0x3
+  MEM/WB: wb_data = 0xe0
+
+REGISTER CHANGES:

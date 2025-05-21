@@ -1,0 +1,22 @@
+Reset released at time 10
+
+=== Final Pipeline State ===
+================== Pipeline State ==================
+PC: 0xe8
+IF/ID PC: 0xe8
+IF/ID Instr: 0x13
+ID/EX PC: 0xe4
+ID/EX rs1_data: 0x0
+ID/EX rs2_data: 0xc8
+ID/EX ALU op: 0
+EX/MEM ALU result: 0x12345002
+EX/MEM rd_addr: 16
+EX/MEM reg_write: 1
+MEM/WB rd_addr: 0
+MEM/WB reg_write: 1
+MEM/WB result: 0xc8
+Control signals:
+  stall_pipeline: 0
+  take_branch: 0
+  pc_src: 0
+==================================================

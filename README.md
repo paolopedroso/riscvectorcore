@@ -38,14 +38,14 @@ A 32-bit RISC-V processor core with 5-stage pipeline and comprehensive hazard ha
 
 2. **Run all tests:**
    ```wsl
-   cd rtl/test
+   cd test
    dos2unix run_test.sh
    ./run_test.sh
    ```
    
 3. **Analyze results:**
    ```wsl
-   cd rtl/tb
+   cd tb
    python3 analyze_vcd.py
    ```
 
@@ -66,7 +66,7 @@ NOTE: Running `./run_test.sh` will generate waveform and simulation_output.log s
    ```
    This will compare actual register values against expected results.
 
-
+`make clean` to remove generated files.
 
 ## Known Issues and Solutions
 
@@ -112,9 +112,9 @@ If you encounter incorrect register values after running the test program:
 │   ├── run_test.sh     # Test runner
 │   └── analyze_vcd.py  # Result analyzer
 │
-└── tools/              # Utility scripts
+└── test/              # Utility scripts
     ├── bin2hex.py      # Binary to hex converter
-    └── fix_processor.sh
+    └── 
 ```
 
 ## Future Improvements
