@@ -45,7 +45,11 @@ TARGET = obj_dir/Vtop
 PYTHON = python3
 ANALYZER = analyze_vcd.py
 
-.PHONY: all clean run analyze
+lint:
+	@echo "Linting SystemVerilog Files..."
+	$(VERILATOR) --lint-only -Wall -Wno-lint -I$(RTL_DIR) $(SV_SRCS) --top-module top
+
+.PHONY: all clean run analyze lint report debug docs
 
 all: $(TARGET)
 
@@ -69,6 +73,7 @@ clean:
 	rm -f memory_dump.txt
 	rm -f debug_log.txt
 	rm -f instruction_trace.txt
+	rm -f *.log
 
 # Generate HTML report from simulation
 report: run
