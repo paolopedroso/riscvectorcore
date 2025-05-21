@@ -21,7 +21,8 @@ A 32-bit RISC-V processor core with 5-stage pipeline and comprehensive hazard ha
 ## Getting Started
 
 ### Prerequisites
-- WSL2 (Reccommended)
+- WSL2
+- Git Bash (optional)
 - Verilator (tested with version 4.2+)
 - GNU Make
 - Python 3.6+
@@ -70,9 +71,11 @@ sudo apt-get install gcc-riscv64-unknown-elf binutils-riscv64-unknown-elf
 `make clean` to remove generated files.
 
 ## Running Your Own Assembly Program
-Install the necessary packages
+Use the necessary commands
 ```wsl
 sudo apt-get install gcc-riscv64-unknown-elf binutils-riscv64-unknown-elf
+
+dos2unix compile_riscv.sh
 ```
 1. Create a `.s` assembly file
 2. Run `./compile_riscv.sh <name of assembly file>.s`
