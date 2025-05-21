@@ -4,9 +4,22 @@ set -e  # Exit on any error
 
 # Configuration
 CORE_DIR="../core"  # Adjust as needed
+TEST_DIR="../test"  # Directory where the test files are located
 ASM_FILE="$1"
+TIMESTAMP=$(date +%s)
+
 if [ -z "$ASM_FILE" ]; then
     echo "Usage: $0 <assembly_file.s>"
+    exit 1
+fi
+
+# Try to find it in the TEST_DIR
+if [[ -f "$TEST_DIR/$ASM_FILE" ]]; then
+    ASM_FILE="$TEST_DIR/$ASM_FILE"
+    echo "Found assembly file at: $ASM_FILE"
+else
+    echo "Error: Cannot find assembly file $ASM_FILE"
+    echo "Looked in current directory and $TEST_DIR"
     exit 1
 fi
 
@@ -59,7 +72,8 @@ echo "Updating instruction memory..."
 INSTR_FILE="$CORE_DIR/instr_mem.sv"
 
 # Backup original file
-cp "$INSTR_FILE" "${INSTR_FILE}.bak.$(date +%s)"
+BACKUP_FILE="${INSTR_FILE}.bak.${TIMESTAMP}"
+cp "$INSTR_FILE" "$BACKUP_FILE"
 
 # Create a fixed template with markers for initialization
 cat > instr_mem_fixed.sv << 'EOF'
@@ -128,10 +142,12 @@ sed -e '/INITIALIZATION_PLACEHOLDER/r instr_list.sv' \
     -e '/INITIALIZATION_PLACEHOLDER/d' \
     instr_mem_fixed.sv > "$INSTR_FILE"
 
-# Clean up temporary files
-rm -f instr_list.sv instr_mem_fixed.sv
-rm -f "$BASENAME.elf" "$BASENAME.dump" "$BASENAME.bin" "$BASENAME.o" linker.ld
-echo "Clean up complete. Temporary files removed."
+if [ ! -d temp ]; then
+    mkdir -p temp
+fi
+mv -f "$BASENAME.elf" "$BASENAME.dump" "$BASENAME.bin" "$BASENAME.o" "$BACKUP_FILE" instr_mem_fixed.sv instr_list.sv linker.ld temp/
+# Backup original file
+echo "Moved temporary and backup files to temp/ directory."
 
 echo "Compilation complete! Instruction memory updated with new code."
 echo "Run the simulation to test your assembly code."

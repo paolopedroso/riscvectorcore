@@ -74,6 +74,9 @@ clean:
 	rm -f debug_log.txt
 	rm -f instruction_trace.txt
 	rm -f *.log
+	rm -f temp/*
+	rmdir temp
+
 
 # Generate HTML report from simulation
 report: run
