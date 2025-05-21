@@ -21,12 +21,22 @@ A 32-bit RISC-V processor core with 5-stage pipeline and comprehensive hazard ha
 ## Getting Started
 
 ### Prerequisites
+- WSL2 (Reccommended)
 - Verilator (tested with version 4.2+)
 - GNU Make
 - Python 3.6+
 - C++ compiler with C++11 support
 - dos2unix
-- WSL2 (Reccommended)
+
+**For writing your own assembly code**
+- riscv64-unknown-elf-as
+- riscv64-unknown-elf-ld
+- riscv64-unknown-elf-objcopy
+
+**Install with:**
+```wsl
+sudo apt-get install gcc-riscv64-unknown-elf binutils-riscv64-unknown-elf
+```
 
 ### Building and Running
 
@@ -45,28 +55,30 @@ A 32-bit RISC-V processor core with 5-stage pipeline and comprehensive hazard ha
    
 3. **Analyze results:**
    ```wsl
-   cd tb
+   cd sim
    python3 analyze_vcd.py
    ```
 
 ## Debugging
 
-1. **Generate VCD trace:**
-   ```wsl
-   cd tb
-   make run
-   ```
-   This will create a `tb_top.vcd` file for waveform viewing.
-
-NOTE: Running `./run_test.sh` will generate waveform and simulation_output.log simultaneously.
-
-2. **Analyze register values:**
+1. **Analyze register values:**
    ```wsl
    python3 analyze_vcd.py
    ```
    This will compare actual register values against expected results.
 
 `make clean` to remove generated files.
+
+## Running Your Own Assembly Program
+Install the necessary packages
+```wsl
+sudo apt-get install gcc-riscv64-unknown-elf binutils-riscv64-unknown-elf
+```
+1. Create a `.s` assembly file
+2. Run `./compile_riscv.sh <name of assembly file>.s`
+3. Then `./run_test.sh`
+
+Examine the `simulation_output.log` for results.
 
 ## Known Issues and Solutions
 
@@ -92,34 +104,10 @@ If you encounter incorrect register values after running the test program:
 3. Use waveform viewer on `tb_top.vcd` to trace specific instructions
 4. Look for endianness-related issues that might cause misinterpretation of values
 
-## Project Structure
-
-```
-.
-├── core/               # RTL source files
-│   ├── top.sv          # Top-level module
-│   ├── program_counter.sv
-│   ├── salu.sv         # Scalar ALU
-│   ├── sdatamem.sv     # Memory module
-│   ├── sdecode.sv      # Instruction decoder
-│   ├── sregfile.sv     # Register file
-│   ├── forwarding_unit.sv
-│   └── shazard_detection.sv
-│
-├── tb/                 # Testbench and simulation files
-│   ├── sim_main.cpp    # Verilator C++ testbench
-│   ├── Makefile        # Build system
-│   ├── run_test.sh     # Test runner
-│   └── analyze_vcd.py  # Result analyzer
-│
-└── test/              # Utility scripts
-    ├── bin2hex.py      # Binary to hex converter
-    └── 
-```
-
 ## Future Improvements
 
 - **Vector extensions support**
+- **Enchancing Assembly Programming Enviroment**
 - Support for RV32M extension (multiplication/division)
 - Enhanced branch prediction
 - Cache implementation
@@ -148,7 +136,7 @@ Contributions are welcome! To contribute:
 
 1. **Simulation gets stuck in infinite loop**  
    Check the program counter module bounds checking and loop detection logic. The top.sv module includes a mechanism to detect when the PC doesn't change for multiple cycles, indicating a potential infinite loop.
-   - Solution: Ensure to add EBREAK at end of program.
+   - **Solution: Ensure to add EBREAK at end of program.**
 
 2. **Incorrect register values after load/store operations**  
    Verify the little-endian handling in sdatamem.sv and ensure the forwarding paths are working properly for store operations. The memory layout in RISC-V (little-endian) requires careful byte ordering during reads and writes.
@@ -156,8 +144,12 @@ Contributions are welcome! To contribute:
 3. **Pipeline hazards causing incorrect execution**  
    Ensure the shazard_detection module is properly stalling the pipeline for load-use hazards, and that the forwarding_unit is correctly identifying all forwarding paths.
 
-4. **Verilator errors during compilation**  
-   Run the verify-sv.sh script to identify potential SystemVerilog constructs that might cause problems with Verilator. Common issues include unbounded arrays and unsupported system tasks.
+## Need Additional Testing
+- BLT
+- BGE
+- BLTU, BGEU
+- SLT/SLTI
+- AUIPC
 
 For detailed debugging, examine `simulation_output.log` and `debug_log.txt` files after running a test. The register_dump.txt file contains the final register values, which can be compared against expected results.
 
