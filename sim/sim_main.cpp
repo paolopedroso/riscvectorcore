@@ -77,7 +77,7 @@
  void dump_memory_contents(Vtop* top, std::ofstream& mem_file) {
      mem_file << "# Memory Dump (First 64 bytes)" << std::endl;
      for (int i = 0; i < 64; i++) {
-         uint8_t value = top->rootp->top__DOT__sdatamem_inst__DOT__memory[i];
+         uint8_t value = top->rootp->top__DOT__datamem_inst__DOT__memory[i];
          mem_file << "mem[" << std::dec << i << "] = 0x" 
                   << std::hex << std::setw(2) << std::setfill('0') 
                   << static_cast<int>(value) << std::endl;
@@ -289,34 +289,6 @@
      }
      printf("\n");
  }
- 
- // Simple test showing little-endian byte ordering
-//  void run_endianness_test(Vtop* top) {
-//      printf("\n======= ENDIANNESS TEST =======\n");
-     
-//      // Test with values that clearly show byte ordering
-//      uint32_t test_value1 = 0x01020304;  // In memory: 04 03 02 01
-//      uint32_t test_value2 = 0x05060708;  // In memory: 08 07 06 05
-     
-//      printf("Test value 1: 0x%08x\n", test_value1);
-//      printf("  Bytes (little-endian memory order): ");
-//      print_bytes_little_endian(test_value1);
-//      printf("\n");
-     
-//      printf("\nTest value 2: 0x%08x\n", test_value2);
-//      printf("  Bytes (little-endian memory order): ");
-//      print_bytes_little_endian(test_value2);
-//      printf("\n");
-     
-//      // Verify result of addition
-//      uint32_t expected_sum = test_value1 + test_value2;
-//      printf("\nExpected sum: 0x%08x\n", expected_sum);
-//      printf("  Bytes (little-endian memory order): ");
-//      print_bytes_little_endian(expected_sum);
-//      printf("\n");
-     
-//      printf("======= END ENDIANNESS TEST =======\n\n");
-//  }
  
  int main(int argc, char** argv) {
      // Initialize variables and setup

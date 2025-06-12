@@ -30,12 +30,12 @@ CPP_SRCS = $(SIM_DIR)/sim_main.cpp
 SV_SRCS = $(RTL_DIR)/top.sv \
           $(RTL_DIR)/program_counter.sv \
           $(RTL_DIR)/salu.sv \
-          $(RTL_DIR)/sdatamem.sv \
-          $(RTL_DIR)/sdecode.sv \
+          $(RTL_DIR)/datamem.sv \
+          $(RTL_DIR)/decode.sv \
           $(RTL_DIR)/sregfile.sv \
-          $(RTL_DIR)/swbmux.sv \
+          $(RTL_DIR)/wbmux.sv \
           $(RTL_DIR)/instr_mem.sv \
-          $(RTL_DIR)/shazard_detection.sv \
+          $(RTL_DIR)/hazard_detection.sv \
           $(RTL_DIR)/forwarding_unit.sv
 
 # Target executable
