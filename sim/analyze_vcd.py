@@ -123,14 +123,14 @@ def verify_results(registers):
         8: 2,               # x8 = 2            - slli x8, x1, 1 (1<<1=2)
         9: 0,               # x9 = 0            - srli x9, x1, 2 (1>>2=0)
         10: 0,              # x10 = 0           - srai x10, x1, 2 (1>>2=0)
-        11: 0xB,            # x11 = 11          - Memory operations failing, but register gets 11
-        12: 9,              # x12 = 9           - Memory operations failing, register gets 9
-        13: 0xB,            # x13 = 11          - Memory operations failing, register gets 11
+        11: 3,             
+        12: 1,
+        13: 3,            
         14: 253,            # x14 = 253 (0xFD)  - addi x14, x0, 253
         15: 0xFFFFFFFD,     # x15 = -3 (0xFFFFFFFD) - lb x15, 16(x0) (sign-extended) 
         16: 0xAAAAB000,     # x16 = 0xAAAAB000 - lui x16, 0xaaaab (the 0x12345 never completes due to EBREAK)
         17: 0xFFFFB000,     # x17 = -20480 (0xFFFFB000) - lh x17, 20(x0) (sign-extended from 0xB000)
-        18: 0xFFFFB000,     # x18 = 0xFFFFB000 - lhu x18, 20(x0) (zero-extended from 0xB000)
+        18: 0x0000B000,     # x18 = 0x0000B000
         19: 3,              # x19 = 3           - addi x19, x0, 3
         20: 5,              # x20 = 5           - addi x20, x0, 5
         21: 20,             # x21 = 20          - addi x21, x0, 20
