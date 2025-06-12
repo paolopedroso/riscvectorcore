@@ -31,7 +31,8 @@ SV_SRCS = $(RTL_DIR)/top.sv \
           $(RTL_DIR)/program_counter.sv \
           $(RTL_DIR)/salu.sv \
           $(RTL_DIR)/datamem.sv \
-          $(RTL_DIR)/decode.sv \
+          $(RTL_DIR)/control.sv \
+		  $(RTL_DIR)/signex.sv \
           $(RTL_DIR)/sregfile.sv \
           $(RTL_DIR)/wbmux.sv \
           $(RTL_DIR)/instr_mem.sv \
