@@ -6,7 +6,7 @@
  * @license Apache 2.0
  */
 
-module sdecode #(
+module decode #(
    parameter int DATA_WIDTH = 32
 ) (
    input  logic                   clk,
@@ -26,6 +26,7 @@ module sdecode #(
    output logic                   mem_read_o,
    output logic                   mem_write_o,
    output logic [1:0]             mem_size_o,
+   output logic                   mem_unsigned_o,
    output logic                   branch_o,
    output logic                   jump_o,
    output logic [1:0]             result_src_o,
@@ -45,13 +46,13 @@ wire [4:0] regs2 = instr_in[24:20];
 wire [6:0] funct7 = instr_in[31:25];
 
 // Verify instruction decodings
-`ifdef SIMULATION
-    always @(posedge clk or negedge rst_n) begin
-        $display("DECODE: Instruction: 0x%h", instr_in);
-        $display("DECODE: Opcode: 0x%h, funct3: 0x%h, funct7: 0x%h", opcode, funct3, funct7);
-        $display("DECODE: rs1: x%0d, rs2: x%0d, rd: x%0d", regs1, regs2, rd);
-    end
-`endif
+// `ifdef SIMULATION
+//     always @(posedge clk or negedge rst_n) begin
+//         $display("DECODE: Instruction: 0x%h", instr_in);
+//         $display("DECODE: Opcode: 0x%h, funct3: 0x%h, funct7: 0x%h", opcode, funct3, funct7);
+//         $display("DECODE: rs1: x%0d, rs2: x%0d, rd: x%0d", regs1, regs2, rd);
+//     end
+// `endif
 
 logic is_r_type, is_i_type, is_s_type, is_b_type, is_u_type, is_j_type;
 
@@ -139,6 +140,9 @@ always_comb begin
     // jalr special case
     jalr_o = 1'b0;
 
+    // LUI case
+    mem_unsigned_o = 1'b0;
+
     if (instr_valid) begin
         case (opcode)
             7'b0110011: begin
@@ -176,19 +180,37 @@ always_comb begin
                 endcase
             end
 
-            7'b0000011: begin
+            7'b0000011: begin  // Load instructions
                 reg_write_en_o = 1'b1;
                 mem_read_o = 1'b1;
                 uses_rs1_o = 1'b1;
                 result_src_o = 2'b01;
 
                 case (funct3)
-                    3'b000: mem_size_o = 2'b00; // LB
-                    3'b001: mem_size_o = 2'b01; // LH
-                    3'b010: mem_size_o = 2'b10; // LW
-                    3'b100: mem_size_o = 2'b00; // LBU
-                    3'b101: mem_size_o = 2'b01; // LHU
-                    default: mem_size_o = 2'b10; // LW
+                    3'b000: begin
+                        mem_size_o = 2'b00; // LB
+                        mem_unsigned_o = 1'b0; // signed
+                    end
+                    3'b001: begin
+                        mem_size_o = 2'b01; // LH
+                        mem_unsigned_o = 1'b0; // signed
+                    end
+                    3'b010: begin
+                        mem_size_o = 2'b10; // LW
+                        mem_unsigned_o = 1'b0; // signed (doesn't matter for word)
+                    end
+                    3'b100: begin
+                        mem_size_o = 2'b00; // LBU
+                        mem_unsigned_o = 1'b1; // unsigned
+                    end
+                    3'b101: begin
+                        mem_size_o = 2'b01; // LHU
+                        mem_unsigned_o = 1'b1; // unsigned
+                    end
+                    default: begin
+                        mem_size_o = 2'b10; // LW
+                        mem_unsigned_o = 1'b0;
+                    end
                 endcase
             end
 
@@ -235,9 +257,6 @@ always_comb begin
                 reg_write_en_o = 1'b1;
                 jump_o = 1'b1;
                 result_src_o = 2'b10;  // Select PC+4 for rd write
-                `ifdef SIMULATION
-                    $display("DECODE: JAL instruction detected, rd=x%0d, imm=0x%h", rd, j_imm);
-                `endif
             end
 
             7'b1100111: begin

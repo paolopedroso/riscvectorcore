@@ -6,7 +6,7 @@
  * @license Apache 2.0
  */
 
-module shazard_detection #(
+module hazard_detection #(
     parameter int DATA_WIDTH = 32
 ) (
     // Instruction being decoded

@@ -85,7 +85,6 @@ always_ff @(posedge clk or negedge rst_n) begin
     else if (pc_write) begin  // Only update PC when not stalled
         pc_out <= next_pc;
     end
-    // When pc_write is 0, PC holds its value (stall)
 end
 
 endmodule

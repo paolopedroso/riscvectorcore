@@ -33,32 +33,6 @@ always @(posedge clk) begin
 end
 `endif
 
-`ifdef SIMULATION
-// Debug instruction decode
-always @(posedge clk) begin
-    if (rst_n) begin      
-        // Track memory operations
-        if (ex_mem_mem_write) begin
-            $display("TOP: MEMORY WRITE OPERATION: addr=0x%h, data=0x%h, size=%0d", 
-                    ex_mem_alu_result, ex_mem_rs2_data, ex_mem_mem_size);
-        end
-        
-        if (ex_mem_mem_read) begin
-            $display("TOP: MEMORY READ OPERATION: addr=0x%h, size=%0d", 
-                    ex_mem_alu_result, ex_mem_mem_size);
-        end
-    end
-end
-
-// Register file write monitoring
-always @(posedge clk) begin
-    if (rst_n && mem_wb_reg_write && mem_wb_rd_addr != 5'b0) begin
-        $display("TOP: About to write to register x%0d, value=0x%h, reg_write_en=%b", 
-                 mem_wb_rd_addr, rd_data, mem_wb_reg_write);
-    end
-end
-`endif
-
 // Internal signals
 // Program counter and instruction signals
 logic [DATA_WIDTH-1:0] pc_out;
@@ -160,113 +134,23 @@ logic [DATA_WIDTH-1:0] mem_wb_instr;     // Track instruction for debugging
 logic [DATA_WIDTH-1:0] forwarded_rs1_value;
 logic [DATA_WIDTH-1:0] forwarded_rs2_value;
 
-// jalr special case signals
-logic jalr;  // From decoder
+// JALR case
+logic jalr;
 logic id_ex_jalr;  // ID/EX pipeline register
 logic ex_mem_jalr;  // EX/MEM pipeline register
 
 logic [DATA_WIDTH-1:0] ex_mem_rs1_data_jalr;  // New register to store rs1 for JALR
+
+// LUI case
+logic mem_unsigned;
+logic id_ex_mem_unsigned;
+logic ex_mem_mem_unsigned;
 
 // Control signals
 assign instr_valid = 1'b1;
 assign take_branch = ex_mem_branch && ex_mem_zero_flag;
 assign pc_src = take_branch || ex_mem_jump;
 assign pc_write = !stall_pipeline;
-
-// Debug signals
-`ifdef SIMULATION
-    // Function to print instruction
-    function void print_instr_info(input string stage, input logic [31:0] instr_val);
-        $display("TOP: %s Stage Instruction: 0x%h", stage, instr_val);
-    endfunction
-`endif
-
-// Enhanced ALU input selection with debug output
-    // always_comb begin
-    // Select ALU input A based on forwarding control
-    // case (forward_a)
-    //     2'b00: begin
-    //         alu_input_a = id_ex_rs1_data;
-    //         `ifdef SIMULATION
-    //             $display("TOP: ALU_A: Using rs1 data directly: x%0d = 0x%h", id_ex_rs1_addr, id_ex_rs1_data);
-    //         `endif
-    //     end
-    //     2'b01: begin
-    //         alu_input_a = rd_data;
-    //         `ifdef SIMULATION
-    //             $display("TOP: ALU_A: Using WB forwarded data: x%0d = 0x%h", mem_wb_rd_addr, rd_data);
-    //         `endif
-    //     end
-    //     2'b10: begin
-    //         alu_input_a = ex_mem_alu_result;
-    //         `ifdef SIMULATION
-    //             $display("TOP: ALU_A: Using MEM forwarded data: x%0d = 0x%h", ex_mem_rd_addr, ex_mem_alu_result);
-    //         `endif
-    //     end
-    //     default: begin
-    //         alu_input_a = id_ex_rs1_data;
-    //         `ifdef SIMULATION
-    //             $display("TOP: ALU_A: Default case - Using rs1 data: x%0d = 0x%h", id_ex_rs1_addr, id_ex_rs1_data);
-    //         `endif
-    //     end
-    // endcase
-    
-    // // Select ALU input B based on forwarding control
-    // case (forward_b)
-    //     2'b00: begin
-    //         alu_rs2_input = id_ex_rs2_data;
-    //         `ifdef SIMULATION
-    //             $display("TOP: ALU_B (reg): Using rs2 data directly: x%0d = 0x%h", id_ex_rs2_addr, id_ex_rs2_data);
-    //         `endif
-    //     end
-    //     2'b01: begin
-    //         alu_rs2_input = rd_data;
-    //         `ifdef SIMULATION
-    //             $display("TOP: ALU_B (reg): Using WB forwarded data: x%0d = 0x%h", mem_wb_rd_addr, rd_data);
-    //         `endif
-    //     end
-    //     2'b10: begin
-    //         alu_rs2_input = ex_mem_alu_result;
-    //         `ifdef SIMULATION
-    //             $display("TOP: ALU_B (reg): Using MEM forwarded data: x%0d = 0x%h", ex_mem_rd_addr, ex_mem_alu_result);
-    //         `endif
-    //     end
-    //     default: begin
-    //         alu_rs2_input = id_ex_rs2_data;
-    //         `ifdef SIMULATION
-    //             $display("TOP: ALU_B (reg): Default case - Using rs2 data: x%0d = 0x%h", id_ex_rs2_addr, id_ex_rs2_data);
-    //         `endif
-    //     end
-    // endcase
-    
-    // // Select immediate value or register value for ALU input B
-    // if (id_ex_imm_valid) begin
-    //     alu_input_b = id_ex_imm;
-    //     `ifdef SIMULATION
-    //         $display("TOP: ALU_B: Using immediate: 0x%h", id_ex_imm);
-            
-    //         // Decode instruction type for better debugging - without local variables
-    //         if (id_ex_instr[6:0] == 7'b0010011) begin
-    //             if (id_ex_instr[14:12] == 3'b001)
-    //                 $display("TOP: SLLI instruction: Using imm = 0x%h as shift amount", id_ex_imm);
-    //             else
-    //                 $display("TOP: I-type instruction: Using imm = 0x%h", id_ex_imm);
-    //         end
-    //     `endif
-    // end else begin
-    //     alu_input_b = alu_rs2_input;
-    //     `ifdef SIMULATION
-    //         $display("TOP: ALU_B: Using rs2 data (possibly forwarded): x%0d = 0x%h", id_ex_rs2_addr, alu_rs2_input);
-            
-    //         // Decode instruction type for better debugging - without local variables
-    //         if (id_ex_instr[6:0] == 7'b0110011) begin
-    //             if (id_ex_instr[14:12] == 3'b000 && id_ex_instr[31:25] == 7'b0000000)
-    //                 $display("TOP: ADD instruction: Using rs2 = 0x%h as second operand", alu_rs2_input);
-    //             else
-    //                 $display("TOP: R-type instruction: Using rs2 = 0x%h", alu_rs2_input);
-    //         end
-    //     `endif
-    // end
 
     // Enhanced ALU input selection with debug output
     always_comb begin
@@ -286,8 +170,20 @@ assign pc_write = !stall_pipeline;
             default: forwarded_rs2_value = id_ex_rs2_data;
         endcase
         
-        // Directly set ALU inputs - simplified approach
-        alu_input_a = forwarded_rs1_value;
+        // Handle special cases for ALU input A
+        // Check instruction opcode to handle LUI and AUIPC
+        // Use the opcode bits directly without declaring a variable
+        case (id_ex_instr[6:0])  // Direct use of opcode bits
+            7'b0110111: begin // LUI - use 0 as input A
+                alu_input_a = 32'b0;
+            end
+            7'b0010111: begin // AUIPC - use PC as input A
+                alu_input_a = id_ex_pc;
+            end
+            default: begin
+                alu_input_a = forwarded_rs1_value;
+            end
+        endcase
         
         // For ALU input B, check if immediate should be used
         if (id_ex_imm_valid) begin
@@ -295,37 +191,7 @@ assign pc_write = !stall_pipeline;
         end else begin
             alu_input_b = forwarded_rs2_value;
         end
-        
-        `ifdef SIMULATION
-            if (forward_a != 2'b00) begin
-                $display("TOP: Using forwarded RS1: forward_a=%b, value=0x%h", 
-                        forward_a, forwarded_rs1_value);
-            end
-            if (forward_b != 2'b00) begin
-                $display("TOP: Using forwarded RS2: forward_b=%b, value=0x%h", 
-                        forward_b, forwarded_rs2_value);
-            end
-        `endif
     end
-    
-    // Final safety check to ensure ADD instruction has correct operands
-    // if (id_ex_instr == 32'h002081b3) begin
-    //     // This is the ADD x3, x1, x2 instruction
-    //     // Verify and print ALU inputs for debugging
-    //     `ifdef SIMULATION
-    //         $display("TOP: ADD INSTRUCTION VERIFICATION:");
-    //         $display("TOP:   rs1=x1 (addr=%0d), value=0x%h", id_ex_rs1_addr, alu_input_a);
-    //         $display("TOP:   rs2=x2 (addr=%0d), value=0x%h", id_ex_rs2_addr, alu_input_b);
-    //         $display("TOP:   rd=x3 (addr=%0d)", id_ex_rd_addr);
-            
-    //         if (id_ex_rs1_addr != 5'd1 || id_ex_rs2_addr != 5'd2 || id_ex_rd_addr != 5'd3) begin
-    //             $display("TOP: WARNING: Register addresses for ADD instruction may be incorrect!");
-    //             $display("TOP: Expected: rs1=x1, rs2=x2, rd=x3");
-    //             $display("TOP: Actual: rs1=x%0d, rs2=x%0d, rd=x%0d", id_ex_rs1_addr, id_ex_rs2_addr, id_ex_rd_addr);
-    //         end
-    //     `endif
-    // end
-    // end
 
 // Pipeline registers update
 always_ff @(posedge clk or negedge rst_n) begin
@@ -351,6 +217,7 @@ always_ff @(posedge clk or negedge rst_n) begin
         id_ex_alu_op <= '0;
         id_ex_imm_valid <= '0;
         id_ex_instr <= '0;
+        id_ex_mem_unsigned <= '0; // LUI
         
         ex_mem_pc <= '0;
         ex_mem_alu_result <= '0;
@@ -386,17 +253,22 @@ always_ff @(posedge clk or negedge rst_n) begin
                 // On branch/jump, insert a bubble (NOP) into the pipeline
                 if_id_pc <= pc_out;
                 if_id_instr <= 32'h00000013;  // NOP instruction (addi x0, x0, 0)
-                `ifdef SIMULATION
-                    $display("TOP: IF/ID: Inserting NOP due to branch/jump");
-                `endif
+
+                // `ifdef SIMULATION
+                //     $display("TOP: IF/ID: Inserting NOP due to branch/jump");
+                // `endif
+
             end else begin
                 if_id_pc <= pc_out;
                 if_id_instr <= instr;
-                `ifdef SIMULATION
-                    $display("TOP: IF/ID: Loading instruction 0x%h from PC 0x%h", instr, pc_out);
-                `endif
+
+                // `ifdef SIMULATION
+                //     $display("TOP: IF/ID: Loading instruction 0x%h from PC 0x%h", instr, pc_out);
+                // `endif
+
             end
         end else begin
+            
             `ifdef SIMULATION
                 $display("TOP: IF/ID: Stalled (keeping current values)");
             `endif
@@ -412,37 +284,39 @@ always_ff @(posedge clk or negedge rst_n) begin
             id_ex_branch <= 1'b0;
             id_ex_jump <= 1'b0;
             id_ex_instr <= 32'h00000013;  // NOP
+
             // Keep register addresses valid but set control signals to 0
             // This ensures correct forwarding but prevents updates
-            `ifdef SIMULATION
-                $display("TOP: ID/EX: Inserting NOP due to stall");
-            `endif
+            // `ifdef SIMULATION
+            //     $display("TOP: ID/EX: Inserting NOP due to stall");
+            // `endif
+
         end else if (pc_src) begin
-            // Insert bubble on branch/jump taken - explicitly set all control signals
-            id_ex_pc <= if_id_pc;         // Keep the PC value
-            id_ex_rs1_data <= rs1_data;   // Keep the register data
+            id_ex_pc <= if_id_pc;
+            id_ex_rs1_data <= rs1_data;
             id_ex_rs2_data <= rs2_data;
-            id_ex_rs1_addr <= rs1_addr;   // Keep the register addresses
+            id_ex_rs1_addr <= rs1_addr;
             id_ex_rs2_addr <= rs2_addr;
-            id_ex_rd_addr <= 5'b0;        // Set destination to x0 (no write)
-            id_ex_reg_write <= 1'b0;      // Disable register write
-            id_ex_mem_read <= 1'b0;       // Disable memory operations
+            id_ex_rd_addr <= 5'b0;
+            id_ex_reg_write <= 1'b0;
+            id_ex_mem_read <= 1'b0;
             id_ex_mem_write <= 1'b0;
-            id_ex_branch <= 1'b0;         // Disable branch/jump
+            id_ex_branch <= 1'b0;
             id_ex_jump <= 1'b0;
-            id_ex_result_src <= 2'b00;    // Default to ALU result
-            id_ex_alu_op <= 4'b0000;      // Default to ADD operation
-            id_ex_imm <= '0;              // Zero immediate
-            id_ex_imm_valid <= 1'b0;      // Disable immediate
-            id_ex_instr <= 32'h00000013;  // NOP instruction
-            `ifdef SIMULATION
-                $display("TOP: ID/EX: Inserting NOP due to branch/jump");
-            `endif
+            id_ex_result_src <= 2'b00;
+            id_ex_alu_op <= 4'b0000;
+            id_ex_imm <= '0;
+            id_ex_imm_valid <= 1'b0;
+            id_ex_instr <= 32'h00000013;
+    
+            // `ifdef SIMULATION
+            //     $display("TOP: ID/EX: Inserting NOP due to branch/jump");
+            // `endif
+
         end else begin
             if (id_ex_jalr) begin
                 ex_mem_rs1_data_jalr <= forwarded_rs1_value;
             end
-            // Normal operation - keep the same logic
             id_ex_pc <= if_id_pc;
             id_ex_rs1_data <= rs1_data;
             id_ex_rs2_data <= rs2_data;
@@ -461,33 +335,22 @@ always_ff @(posedge clk or negedge rst_n) begin
             id_ex_imm_valid <= imm_valid;
             id_ex_instr <= if_id_instr;
 
-            id_ex_jalr <= jalr; // jalr special case
+            id_ex_jalr <= jalr;
 
-            `ifdef SIMULATION
-                $display("TOP: ID/EX: Processing instruction 0x%h", if_id_instr);
-                $display("TOP: ID/EX: rs1=x%0d (0x%h), rs2=x%0d (0x%h), rd=x%0d",
-                         rs1_addr, rs1_data, rs2_addr, rs2_data, rd_addr);
-                if (imm_valid) $display("TOP: ID/EX: imm=0x%h", imm_value);
-            `endif
+            id_ex_mem_unsigned <= mem_unsigned;
 
-            // Add debug to track values through pipeline
-            `ifdef SIMULATION
-                if (if_id_instr == 32'h002081b3) begin  // ADD x3, x1, x2
-                    $display("TOP: ID/EX PIPELINE: ADD instruction entering EX stage");
-                    $display("TOP:   rs1_addr=x%0d, rs2_addr=x%0d, rd_addr=x%0d", 
-                            rs1_addr, rs2_addr, rd_addr);
-                    $display("TOP:   rs1_data=0x%h, rs2_data=0x%h", rs1_data, rs2_data);
-                end
-            `endif
+            // `ifdef SIMULATION
+            //     $display("TOP: ID/EX: Processing instruction 0x%h", if_id_instr);
+            //     $display("TOP: ID/EX: rs1=x%0d (0x%h), rs2=x%0d (0x%h), rd=x%0d",
+            //              rs1_addr, rs1_data, rs2_addr, rs2_data, rd_addr);
+            //     if (imm_valid) $display("TOP: ID/EX: imm=0x%h", imm_value);
+            // `endif
         end
         
         // Update EX/MEM stage
         ex_mem_pc <= id_ex_pc;
         ex_mem_alu_result <= alu_result;
-
-        // FIX: Use the properly forwarded value for store data
         ex_mem_rs2_data <= forwarded_rs2_value;
-
         ex_mem_imm <= id_ex_imm;
         ex_mem_rd_addr <= id_ex_rd_addr;
         ex_mem_reg_write <= id_ex_reg_write;
@@ -500,55 +363,9 @@ always_ff @(posedge clk or negedge rst_n) begin
         ex_mem_jump <= id_ex_jump;
         ex_mem_instr <= id_ex_instr;
 
-        ex_mem_jalr <= id_ex_jalr; // jalr special case
+        ex_mem_jalr <= id_ex_jalr;
 
-        // Add extra debug for store instructions
-        `ifdef SIMULATION
-            if (id_ex_mem_write) begin
-                $display("TOP: STORE INSTRUCTION MOVING TO MEM STAGE:");
-                $display("TOP:   rs2_addr=x%0d, forwarded=%b, forward_sel=%b", 
-                        id_ex_rs2_addr, (forward_b != 2'b00), forward_b);
-                $display("TOP:   Original rs2_data=0x%h", id_ex_rs2_data);
-                case (forward_b)
-                    2'b01: $display("TOP:   Forwarded rs2_data from WB=0x%h", rd_data);
-                    2'b10: $display("TOP:   Forwarded rs2_data from MEM=0x%h", ex_mem_alu_result);
-                endcase
-                // $display("TOP:   Final rs2_data to memory=0x%h", data_for_store_to_ex_mem_reg);
-            end
-        `endif
-
-        `ifdef SIMULATION
-            if (id_ex_reg_write) 
-                $display("TOP: EX/MEM: ALU result=0x%h for rd=x%0d", alu_result, id_ex_rd_addr);
-            if (id_ex_branch)
-                $display("TOP: EX/MEM: Branch condition=%b", zero_flag);
-        `endif
-        
-        // Update MEM/WB stage
-        // mem_wb_alu_result <= ex_mem_alu_result;
-        // mem_wb_mem_data <= mem_rdata;
-        // mem_wb_pc <= ex_mem_pc;
-        // mem_wb_rd_addr <= ex_mem_rd_addr;
-        // mem_wb_reg_write <= ex_mem_reg_write;
-        // mem_wb_result_src <= ex_mem_result_src;
-        // mem_wb_instr <= ex_mem_instr;
-        `ifdef SIMULATION
-            if (ex_mem_mem_read)
-                $display("TOP: MEM/WB: Memory read data=0x%h from addr=0x%h", 
-                        mem_rdata, ex_mem_alu_result);
-            else if (ex_mem_reg_write)
-                $display("TOP: MEM/WB: Writing back 0x%h to rd=x%0d", 
-                        (ex_mem_result_src == 2'b01) ? mem_rdata : ex_mem_alu_result,
-                        ex_mem_rd_addr);
-                        
-            // Debug code for register write tracking
-            if (ex_mem_reg_write && ex_mem_rd_addr != 5'b0) begin
-                $display("TOP: PIPELINE: MEM/WB update - Setting mem_wb_reg_write=%b, mem_wb_rd_addr=x%0d, result_src=%b",
-                        ex_mem_reg_write, ex_mem_rd_addr, ex_mem_result_src);
-            end
-        `endif
-
-        
+        ex_mem_mem_unsigned <= id_ex_mem_unsigned;
     end
 end
 
@@ -571,12 +388,13 @@ always_ff @(posedge clk or negedge rst_n) begin
         mem_wb_result_src <= ex_mem_result_src;
         mem_wb_instr <= ex_mem_instr;
         
-        `ifdef SIMULATION
-            if (ex_mem_reg_write && ex_mem_rd_addr != 5'b0) begin
-                $display("TOP: PIPELINE: MEM/WB stage update - ex_mem_alu_result=0x%h, rd=x%0d",
-                        ex_mem_alu_result, ex_mem_rd_addr);
-            end
-        `endif
+        // `ifdef SIMULATION
+        //     if (ex_mem_reg_write && ex_mem_rd_addr != 5'b0) begin
+        //         $display("TOP: PIPELINE: MEM/WB stage update - ex_mem_alu_result=0x%h, rd=x%0d",
+        //                 ex_mem_alu_result, ex_mem_rd_addr);
+        //     end
+        // `endif
+
     end
 end
 
@@ -603,7 +421,7 @@ instr_mem instr_mem_inst (
 );
 
 // Decode modules
-sdecode sdecode_inst (
+decode decode_inst (
     .clk(clk),
     .rst_n(rst_n),
     .instr_in(if_id_instr),
@@ -624,33 +442,10 @@ sdecode sdecode_inst (
     .uses_rs1_o(uses_rs1),
     .uses_rs2_o(uses_rs2),
 
-    .jalr_o(jalr)
+    // Cases
+    .jalr_o(jalr),
+    .mem_unsigned_o(mem_unsigned)
 );
-
-// Debug signals for register file inputs
-`ifdef SIMULATION
-always @(posedge clk) begin
-    if (rst_n && mem_wb_reg_write && mem_wb_rd_addr != 5'b0) begin
-        $display("TOP: TOP: About to write to register x%0d, value=0x%h, reg_write_en=%b", 
-                 mem_wb_rd_addr, rd_data, mem_wb_reg_write);
-    end
-end
-`endif
-
-`ifdef SIMULATION
-// Enhanced jump tracking
-always @(posedge clk) begin
-    if (rst_n && if_id_instr[6:0] == 7'b1101111) begin  // JAL opcode
-        $display("TOP: JUMP TRACKING: JAL detected at PC=0x%h, instr=0x%h", if_id_pc, if_id_instr);
-        $display("TOP: JUMP TRACKING: Target should be PC=0x%h", if_id_pc + $signed({{12{if_id_instr[31]}}, if_id_instr[19:12], if_id_instr[20], if_id_instr[30:21], 1'b0}));
-    end
-    
-    if (rst_n && ex_mem_jump) begin
-        $display("TOP: JUMP TRACKING: Jump executing in MEM stage, PC=0x%h, target=0x%h", 
-                 ex_mem_pc, ex_mem_pc + ex_mem_imm);
-    end
-end
-`endif
 
 sregfile sregfile_inst (
     .clk(clk),
@@ -666,8 +461,6 @@ sregfile sregfile_inst (
 
 // Execute modules
 salu salu_inst (
-    .clk(clk),
-    .rst_n(rst_n),
     .rs1_data_i(alu_input_a),
     .rs2_data_i(alu_input_b),
     .alu_op_in(id_ex_alu_op),
@@ -678,7 +471,7 @@ salu salu_inst (
 );
 
 // Memory modules
-sdatamem sdatamem_inst (
+datamem datamem_inst (
     .clk(clk),
     .rst_n(rst_n),
     .mem_read_i(ex_mem_mem_read),
@@ -690,11 +483,14 @@ sdatamem sdatamem_inst (
 
     // Added debug output for memory operations -- REMOVE IN FINAL VERSION
     .curr_instr(ex_mem_instr),
-    .curr_pc(ex_mem_pc)
+    .curr_pc(ex_mem_pc),
+
+    // LUI case
+    .mem_unsigned_i(ex_mem_mem_unsigned)
 );
 
 // Writeback module
-swbmux swbmux_inst (
+wbmux wbmux_inst (
     .result_src_i(mem_wb_result_src),
     .alu_result(mem_wb_alu_result),
     .mem_rdata(mem_wb_mem_data),
@@ -703,7 +499,7 @@ swbmux swbmux_inst (
 );
 
 // Hazard handling modules
-shazard_detection shazard_detect_inst (
+hazard_detection hazard_detect_inst (
     .id_rs1_addr(rs1_addr),
     .id_rs2_addr(rs2_addr),
     .id_uses_rs1(uses_rs1),
@@ -808,153 +604,6 @@ always @(posedge clk) begin
 end
 `endif
 
-`ifdef SIMULATION
-// Memory operation tracking
-always @(posedge clk) begin
-    if (rst_n) begin
-        // Track the store instruction (SW x3, 0(x0))
-        if (if_id_instr == 32'h00302023) begin
-            $display("TOP: STORE INSTRUCTION DETECTED: SW x3, 0(x0)");
-            $display("TOP:   Current value of x3: 0x%h", sregfile_inst.register[3]);
-        end
-        
-        // Track the load instruction (LW x6, 0(x0))
-        if (if_id_instr == 32'h00002303) begin
-            $display("TOP: LOAD INSTRUCTION DETECTED in IF/ID stage: LW x6, 0(x0)");
-            $display("TOP:   Memory at address 0: bytes %02x %02x %02x %02x",
-                     sdatamem_inst.memory[0], 
-                     sdatamem_inst.memory[1],
-                     sdatamem_inst.memory[2],
-                     sdatamem_inst.memory[3]);
-        end
-        
-        if (id_ex_instr == 32'h00002303) begin
-            $display("TOP: LOAD INSTRUCTION DETECTED in ID/EX stage: LW x6, 0(x0)");
-            $display("TOP:   Memory at address 0: bytes %02x %02x %02x %02x",
-                     sdatamem_inst.memory[0], 
-                     sdatamem_inst.memory[1],
-                     sdatamem_inst.memory[2],
-                     sdatamem_inst.memory[3]);
-        end
-
-        if (ex_mem_instr == 32'h00002303) begin
-            $display("TOP: LOAD INSTRUCTION DETECTED in EX/MEM stage: LW x6, 0(x0)");
-            $display("TOP:   Memory at address 0: bytes %02x %02x %02x %02x",
-                     sdatamem_inst.memory[0], 
-                     sdatamem_inst.memory[1],
-                     sdatamem_inst.memory[2],
-                     sdatamem_inst.memory[3]);
-        end
-
-        if (mem_wb_instr == 32'h00002303) begin
-            $display("TOP: LOAD INSTRUCTION DETECTED in MEM/WB stage: LW x6, 0(x0)");
-            $display("TOP:   Memory at address 0: bytes %02x %02x %02x %02x",
-                     sdatamem_inst.memory[0], 
-                     sdatamem_inst.memory[1],
-                     sdatamem_inst.memory[2],
-                     sdatamem_inst.memory[3]);
-        end
-        
-        // Track when memory writes actually happen
-        if (ex_mem_mem_write && ex_mem_mem_size == 2'b10) begin
-            $display("TOP: MEMORY WRITE EXECUTING: addr=0x%h, data=0x%h",
-                     ex_mem_alu_result, ex_mem_rs2_data);
-        end
-    end
-end
-`endif
-
-`ifdef SIMULATION
-always @(posedge clk) begin
-    if (rst_n && id_ex_instr[6:0] == 7'b0100011) begin  // Store opcode
-        $display("TOP: STORE INSTRUCTION IN EX STAGE: instr=0x%h, rs2_addr=x%0d, rs2_data=0x%h",
-                 id_ex_instr, id_ex_rs2_addr, id_ex_rs2_data);
-        if (forward_b != 2'b00) begin
-            $display("TOP: STORE FORWARDING ACTIVE: forward_b=%b", forward_b);
-        end
-    end
-end
-`endif
-
-`ifdef SIMULATION
-always @(posedge clk) begin
-    if (rst_n && ex_mem_mem_write) begin
-        $display("TOP: MEMORY STORE EXECUTION: addr=0x%h, data=0x%h", 
-                 ex_mem_alu_result, ex_mem_rs2_data);
-        if (ex_mem_alu_result == 0) begin
-            $display("TOP:   MEMORY STORE TO ADDRESS 0: Storing value 0x%h", ex_mem_rs2_data);
-            if (ex_mem_rs2_data != 3) begin
-                $display("TOP:   WARNING: Expected to store value 3 (register x3), but storing 0x%h",
-                         ex_mem_rs2_data);
-            end else begin
-                $display("TOP:   SUCCESS: Correctly storing value 3 from register x3");
-            end
-        end
-    end
-end
-
-`endif
-
-`ifdef SIMULATION
-// Add enhanced tracking for memory operations
-always @(posedge clk) begin
-    if (rst_n) begin
-        // Track store instructions specifically
-        if (ex_mem_mem_write) begin
-            $display("TOP: \nEXECUTING MEMORY STORE: addr=0x%h, data=0x%h", 
-                     ex_mem_alu_result, ex_mem_rs2_data);
-            
-            if (ex_mem_instr[6:0] == 7'b0100011) begin
-                // S-type instruction
-                logic [4:0] local_rs2_addr = ex_mem_instr[24:20];
-                $display("TOP:   STORE INSTRUCTION: Using rs2=x%0d (value=0x%h)", 
-                         local_rs2_addr, ex_mem_rs2_data);
-            end
-            
-            if (ex_mem_alu_result == 0) begin
-                $display("TOP:   CRITICAL STORE TO ADDRESS 0: val=0x%h", ex_mem_rs2_data);
-            end
-        end
-        
-        // Track load instructions specifically
-        if (ex_mem_mem_read) begin
-            $display("TOP: \nEXECUTING MEMORY LOAD: addr=0x%h", ex_mem_alu_result);
-            if (ex_mem_alu_result == 0) begin
-                $display("TOP:   CRITICAL LOAD FROM ADDRESS 0");
-                $display("TOP:   Memory contents: %02x %02x %02x %02x", 
-                         sdatamem_inst.memory[0], sdatamem_inst.memory[1],
-                         sdatamem_inst.memory[2], sdatamem_inst.memory[3]);
-            end
-        end
-    end
-end
-
-// Add verification for store-load sequence
-logic [31:0] address_0_contents;
-always @(posedge clk) begin
-    if (rst_n) begin
-        // Track changes to memory at address 0
-        address_0_contents = {sdatamem_inst.memory[3], sdatamem_inst.memory[2],
-                              sdatamem_inst.memory[1], sdatamem_inst.memory[0]};
-                             
-        // Verify content changes at address 0
-        if (ex_mem_mem_write && ex_mem_alu_result == 0) begin
-            $display("TOP: VERIFICATION: About to store 0x%h to address 0", ex_mem_rs2_data);
-        end
-        
-        // Check for loads by examining the result_src signal
-        // LW instruction typically uses result_src = 01
-        if (mem_wb_result_src == 2'b01 && mem_wb_alu_result == 0) begin
-            $display("TOP: VERIFICATION: Loaded 0x%h from address 0", mem_wb_mem_data);
-            if (mem_wb_mem_data == 3) begin
-                $display("TOP: VERIFICATION PASSED: Successfully loaded correct value (3) from address 0");
-            end else begin
-                $display("TOP: VERIFICATION FAILED: Expected to load 3, got 0x%h", mem_wb_mem_data);
-            end
-        end
-    end
-end
-`endif
 
 
 endmodule

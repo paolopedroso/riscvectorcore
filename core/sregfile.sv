@@ -85,9 +85,11 @@ always_ff @(posedge clk or negedge rst_n) begin
         if (reg_write_i && (rd_addr_i != 0)) begin
             register[rd_addr_i] <= rd_data_i;
             
-            `ifdef SIMULATION
-                $display("REGFILE: Writing 0x%08x to x%0d", rd_data_i, rd_addr_i);
-            `endif
+            // Debug writes
+            // `ifdef SIMULATION
+            //     $display("REGFILE: Writing 0x%08x to x%0d", rd_data_i, rd_addr_i);
+            // `endif
+
         end
     end
 end
