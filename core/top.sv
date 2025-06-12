@@ -43,10 +43,12 @@ logic                  pc_write;
 logic                  take_branch;
 logic                  pc_src;
 
-// Decoder signals
+logic [6:0]             opcode;
 logic [4:0]             rs1_addr;
 logic [4:0]             rs2_addr;
 logic [4:0]             rd_addr;
+logic [2:0]             funct3; 
+logic [6:0]             funct7; 
 logic                   reg_write_en;
 logic [DATA_WIDTH-1:0]  imm_value;
 logic                   imm_valid;
@@ -152,6 +154,14 @@ assign take_branch = ex_mem_branch && ex_mem_zero_flag;
 assign pc_src = take_branch || ex_mem_jump;
 assign pc_write = !stall_pipeline;
 
+assign opcode   = if_id_instr[6:0];
+assign rs1_addr = if_id_instr[19:15];  // Extract rs1 (bits 19:15)
+assign rs2_addr = if_id_instr[24:20];  // Extract rs2 (bits 24:20)
+assign rd_addr  = if_id_instr[11:7];    // Extract rd (bits 11:7) 
+assign funct3   = if_id_instr[14:12];
+assign funct7   = if_id_instr[31:25];
+
+
     // Enhanced ALU input selection with debug output
     always_comb begin
         // Select forwarded RS1 value
@@ -250,21 +260,12 @@ always_ff @(posedge clk or negedge rst_n) begin
         // Update IF/ID stage - controlled by stall
         if (!stall_pipeline) begin
             if (pc_src) begin
-                // On branch/jump, insert a bubble (NOP) into the pipeline
                 if_id_pc <= pc_out;
                 if_id_instr <= 32'h00000013;  // NOP instruction (addi x0, x0, 0)
-
-                // `ifdef SIMULATION
-                //     $display("TOP: IF/ID: Inserting NOP due to branch/jump");
-                // `endif
 
             end else begin
                 if_id_pc <= pc_out;
                 if_id_instr <= instr;
-
-                // `ifdef SIMULATION
-                //     $display("TOP: IF/ID: Loading instruction 0x%h from PC 0x%h", instr, pc_out);
-                // `endif
 
             end
         end else begin
@@ -275,21 +276,14 @@ always_ff @(posedge clk or negedge rst_n) begin
             // Keep existing values during stall - no update needed
         end
         
-        // Update ID/EX stage - Be explicit about what happens during stalls
         if (stall_pipeline) begin
-            // Insert bubble on stall - explicitly set all control signals to inactive
+            // Insert bubble on stall
             id_ex_reg_write <= 1'b0;
             id_ex_mem_read <= 1'b0;
             id_ex_mem_write <= 1'b0;
             id_ex_branch <= 1'b0;
             id_ex_jump <= 1'b0;
             id_ex_instr <= 32'h00000013;  // NOP
-
-            // Keep register addresses valid but set control signals to 0
-            // This ensures correct forwarding but prevents updates
-            // `ifdef SIMULATION
-            //     $display("TOP: ID/EX: Inserting NOP due to stall");
-            // `endif
 
         end else if (pc_src) begin
             id_ex_pc <= if_id_pc;
@@ -308,10 +302,6 @@ always_ff @(posedge clk or negedge rst_n) begin
             id_ex_imm <= '0;
             id_ex_imm_valid <= 1'b0;
             id_ex_instr <= 32'h00000013;
-    
-            // `ifdef SIMULATION
-            //     $display("TOP: ID/EX: Inserting NOP due to branch/jump");
-            // `endif
 
         end else begin
             if (id_ex_jalr) begin
@@ -334,17 +324,8 @@ always_ff @(posedge clk or negedge rst_n) begin
             id_ex_alu_op <= alu_op;
             id_ex_imm_valid <= imm_valid;
             id_ex_instr <= if_id_instr;
-
             id_ex_jalr <= jalr;
-
             id_ex_mem_unsigned <= mem_unsigned;
-
-            // `ifdef SIMULATION
-            //     $display("TOP: ID/EX: Processing instruction 0x%h", if_id_instr);
-            //     $display("TOP: ID/EX: rs1=x%0d (0x%h), rs2=x%0d (0x%h), rd=x%0d",
-            //              rs1_addr, rs1_data, rs2_addr, rs2_data, rd_addr);
-            //     if (imm_valid) $display("TOP: ID/EX: imm=0x%h", imm_value);
-            // `endif
         end
         
         // Update EX/MEM stage
@@ -420,18 +401,13 @@ instr_mem instr_mem_inst (
     .instr_o(instr)
 );
 
-// Decode modules
-decode decode_inst (
-    .clk(clk),
-    .rst_n(rst_n),
+control control_inst (
     .instr_in(if_id_instr),
     .instr_valid(instr_valid),
-    .rs1_addr_o(rs1_addr),
-    .rs2_addr_o(rs2_addr),
-    .rd_addr_o(rd_addr),
+    .opcode_in(opcode),
+    .funct3_in(funct3),
+    .funct7_in(funct7),
     .reg_write_en_o(reg_write_en),
-    .imm_value_o(imm_value),
-    .imm_valid_o(imm_valid),
     .alu_op_o(alu_op),
     .mem_read_o(mem_read),
     .mem_write_o(mem_write),
@@ -441,8 +417,6 @@ decode decode_inst (
     .result_src_o(result_src),
     .uses_rs1_o(uses_rs1),
     .uses_rs2_o(uses_rs2),
-
-    // Cases
     .jalr_o(jalr),
     .mem_unsigned_o(mem_unsigned)
 );
@@ -457,6 +431,13 @@ sregfile sregfile_inst (
     .rd_addr_i(mem_wb_rd_addr),
     .rd_data_i(rd_data),
     .reg_write_i(mem_wb_reg_write)
+);
+
+signex signex_inst (
+    .opcode_in(opcode),
+    .instr_in(if_id_instr),
+    .imm_valid_o(imm_valid),
+    .imm_value_o(imm_value)
 );
 
 // Execute modules
