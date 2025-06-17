@@ -16,7 +16,6 @@ module control #(
    input  logic [6:0]             funct7_in,
 
    output logic                   reg_write_en_o,
-
    output logic [3:0]             alu_op_o,
    output logic                   mem_read_o,
    output logic                   mem_write_o,
@@ -25,10 +24,8 @@ module control #(
    output logic                   branch_o,
    output logic                   jump_o,
    output logic [1:0]             result_src_o,
-
    output logic                   uses_rs1_o,
    output logic                   uses_rs2_o,
-
    output logic                   jalr_o
 );
 
@@ -43,8 +40,6 @@ always_comb begin
     result_src_o = 2'b00;
     uses_rs1_o = 1'b0;
     uses_rs2_o = 1'b0;
-
-    // jalr special case
     jalr_o = 1'b0;
 
     // LUI case

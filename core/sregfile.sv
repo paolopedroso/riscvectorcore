@@ -19,7 +19,7 @@ module sregfile #(
     input logic [4:0] rd_addr_i,   // Destination register
     
     // Control signals
-    input logic reg_write_i,       // Register write enable
+    input logic regw_en_i,       // Register write enable
     
     // Data ports
     input logic [DATA_WIDTH-1:0] rd_data_i,  // Data to write
@@ -27,7 +27,7 @@ module sregfile #(
     output logic [DATA_WIDTH-1:0] rs2_data_o  // Data from rs2
 );
 
-// Register file
+// Register file (1024 bits)
 logic [DATA_WIDTH-1:0] register [32];
 logic [63:0] cycle_count;  // Cycle counter for debug
 
@@ -82,7 +82,7 @@ always_ff @(posedge clk or negedge rst_n) begin
         cycle_count <= cycle_count + 1;
         
         // Write to register if write enable is asserted and rd != x0
-        if (reg_write_i && (rd_addr_i != 0)) begin
+        if (regw_en_i && (rd_addr_i != 0)) begin
             register[rd_addr_i] <= rd_data_i;
             
             // Debug writes
@@ -100,7 +100,7 @@ always_comb begin
     rs1_data_o = (rs1_addr_i == 0) ? 0 : register[rs1_addr_i];
     rs2_data_o = (rs2_addr_i == 0) ? 0 : register[rs2_addr_i];
 
-    if (reg_write_i && rd_addr_i != 0) begin
+    if (regw_en_i && rd_addr_i != 0) begin
         if (rs1_addr_i == rd_addr_i) 
             rs1_data_o = rd_data_i;
         if (rs2_addr_i == rd_addr_i)

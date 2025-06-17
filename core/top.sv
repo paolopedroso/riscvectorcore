@@ -268,7 +268,9 @@ always_ff @(posedge clk or negedge rst_n) begin
                 if_id_instr <= instr;
 
             end
-        end else begin
+        end 
+        
+        else begin
             
             `ifdef SIMULATION
                 $display("TOP: IF/ID: Stalled (keeping current values)");
@@ -430,7 +432,7 @@ sregfile sregfile_inst (
     .rs2_data_o(rs2_data),
     .rd_addr_i(mem_wb_rd_addr),
     .rd_data_i(rd_data),
-    .reg_write_i(mem_wb_reg_write)
+    .regw_en_i(mem_wb_reg_write)
 );
 
 signex signex_inst (

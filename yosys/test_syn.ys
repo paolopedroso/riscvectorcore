@@ -1,0 +1,35 @@
+# Yosys synthesis script for RV32I processor
+
+# Read SystemVerilog files with -sv flag
+read_verilog -sv ../core/salu.sv
+read_verilog -sv ../core/control.sv
+read_verilog -sv ../core/datamem.sv
+read_verilog -sv ../core/forwarding_unit.sv
+read_verilog -sv ../core/hazard_detection.sv
+read_verilog -sv ../core/instr_mem.sv
+read_verilog -sv ../core/program_counter.sv
+read_verilog -sv ../core/sregfile.sv
+read_verilog -sv ../core/wbmux.sv
+read_verilog -sv ../core/signex.sv
+read_verilog -sv ../core/top.sv
+
+# Elaborate design hierarchy
+hierarchy -check -top top
+
+# Convert processes to netlists
+proc
+
+# Perform various optimizations
+opt
+
+# Technology mapping
+techmap
+
+# Optimize once more
+opt
+
+# Print statistics
+stat
+
+# Write synthesized design
+write_verilog synth_output.v
