@@ -5,6 +5,7 @@ set -e  # Exit on any error
 # Configuration
 CORE_DIR="../core"  # Adjust as needed
 TEST_DIR="../test"  # Directory where the test files are located
+ASM_DIR="../test/asm"
 ASM_FILE="$1"
 TIMESTAMP=$(date +%s)
 
@@ -13,13 +14,23 @@ if [ -z "$ASM_FILE" ]; then
     exit 1
 fi
 
-# Try to find it in the TEST_DIR
-if [[ -f "$TEST_DIR/$ASM_FILE" ]]; then
-    ASM_FILE="$TEST_DIR/$ASM_FILE"
+# Try to find it in the ASM_DIR
+# if [[ -f "$ASM_DIR/$ASM_FILE" ]]; then
+#     ASM_FILE="$ASM_DIR/$ASM_FILE"
+#     echo "Found assembly file at: $ASM_FILE"
+# else
+#     echo "Error: Cannot find assembly file $ASM_FILE"
+#     echo "Looked in current directory and $ASM_DIR"
+#     exit 1
+# fi
+
+# Try to find it in the ASM_DIR
+if [[ -f "$ASM_DIR/$ASM_FILE" ]]; then
+    ASM_FILE="$ASM_DIR/$ASM_FILE"
     echo "Found assembly file at: $ASM_FILE"
 else
     echo "Error: Cannot find assembly file $ASM_FILE"
-    echo "Looked in current directory and $TEST_DIR"
+    echo "Looked in current directory and $ASM_DIR"
     exit 1
 fi
 
