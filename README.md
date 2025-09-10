@@ -1,4 +1,4 @@
-# RISC-V Scalar Core Implementation (IN DEVELOPMENT)
+# RISC-V Scalar / Vector Core Implementation
 
 A 32-bit RISC-V processor core with 5-stage pipeline and comprehensive hazard handling, implemented in SystemVerilog.
 
@@ -47,7 +47,7 @@ sudo apt-get install gcc-riscv64-unknown-elf binutils-riscv64-unknown-elf
    cd riscvectorcore
    ```
 
-2. **Run all tests:**
+2. **Run Simulation:**
    ```wsl
    cd sim
    dos2unix sim_top.sh
