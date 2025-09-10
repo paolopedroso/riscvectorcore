@@ -49,9 +49,9 @@ sudo apt-get install gcc-riscv64-unknown-elf binutils-riscv64-unknown-elf
 
 2. **Run all tests:**
    ```wsl
-   cd test
-   dos2unix run_test.sh
-   ./run_test.sh
+   cd sim
+   dos2unix sim_top.sh
+   ./sim_top.sh
    ```
    
 3. **Analyze results:**
@@ -79,7 +79,7 @@ dos2unix compile_riscv.sh
 ```
 1. Create a `.s` assembly file
 2. Run `./compile_riscv.sh <name of assembly file>.s`
-3. Then `./run_test.sh`
+3. Then `./sim_top.sh`
 
 Examine the `simulation_output.log` for results.
 
