@@ -1,5 +1,5 @@
 /*
- * Enhanced Scalar ALU with Detailed Debug
+ * Scalar ALU
  *
  * @copyright 2025 Paolo Pedroso <paoloapedroso@gmail.com>
  *
