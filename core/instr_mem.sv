@@ -30,24 +30,22 @@ module instr_mem #(
         mem_index = int'(($unsigned(addr_i) >> 2) & (MEM_SIZE - 1));
         
         // Debug output
-        // `ifdef SIMULATION
-        //     $display("IMEM: Reading from address 0x%h, mem_index=%0d, instruction=0x%h", 
-        //              addr_i, mem_index, imem[mem_index]);
-        //     if (addr_i > 32'h00000100) begin
-        //         $display("WARNING: PC is outside expected program range! addr=0x%h", addr_i);
-        //     end
-        // `endif
+        `ifdef SIMULATION
+            $display("IMEM: Reading from address 0x%h, mem_index=%0d, instruction=0x%h", 
+                     addr_i, mem_index, imem[mem_index]);
+            if (addr_i > 32'h00000100) begin
+                $display("WARNING: PC is outside expected program range! addr=0x%h", addr_i);
+            end
+        `endif
         
         // Return instruction at calculated index with bounds check
         if (mem_index < MEM_SIZE && mem_index >= 0) begin
             instr_o = imem[mem_index];
         end else begin
             instr_o = 32'h00000013;  // Return a NOP for out-of-bounds
-
-            // `ifdef SIMULATION
-            //     $display("ERROR: Memory access out of bounds! index=%0d", mem_index);
-            // `endif
-            
+            `ifdef SIMULATION
+                $display("ERROR: Memory access out of bounds! index=%0d", mem_index);
+            `endif
         end
     end
 

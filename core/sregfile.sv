@@ -84,17 +84,10 @@ always_ff @(posedge clk or negedge rst_n) begin
         // Write to register if write enable is asserted and rd != x0
         if (regw_en_i && (rd_addr_i != 0)) begin
             register[rd_addr_i] <= rd_data_i;
-            
-            // Debug writes
-            // `ifdef SIMULATION
-            //     $display("REGFILE: Writing 0x%08x to x%0d", rd_data_i, rd_addr_i);
-            // `endif
-
         end
     end
 end
 
-// FIXED CODE:
 always_comb begin
     // Normal read logic for both rs1 and rs2 - let forwarding unit handle special cases
     rs1_data_o = (rs1_addr_i == 0) ? 0 : register[rs1_addr_i];
