@@ -53,7 +53,7 @@ sudo apt-get install gcc-riscv64-unknown-elf binutils-riscv64-unknown-elf
    dos2unix sim_top.sh
    ./sim_top.sh
    ```
-   
+
    ```
    make clean // to remove generated files.
    ``` 
@@ -90,8 +90,6 @@ Examine the `simulation_output.log` for results.
 
 Apache 2.0 License  
 Copyright 2025 Paolo Pedroso
-
----
 
 ## Contributing
 
