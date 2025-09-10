@@ -1,4 +1,4 @@
-# RISC-V Scalar Core Implementation (IN DEVELOPMENT)
+# RISC-V Scalar / Vector Core Implementation
 
 A 32-bit RISC-V processor core with 5-stage pipeline and comprehensive hazard handling, implemented in SystemVerilog.
 
@@ -12,7 +12,7 @@ A 32-bit RISC-V processor core with 5-stage pipeline and comprehensive hazard ha
 - Write Back (WB)
 
 ### Key Features
-- Complete RV32I base integer instruction support
+- Complete RV32IV base integer instruction support
 - 5-stage pipeline with data forwarding and hazard detection
 - Load/store memory operations with byte, halfword, and word support
 - Branch and jump instructions with pipeline flushing
@@ -47,11 +47,11 @@ sudo apt-get install gcc-riscv64-unknown-elf binutils-riscv64-unknown-elf
    cd riscvectorcore
    ```
 
-2. **Run all tests:**
+2. **Run Simulation:**
    ```wsl
-   cd test
-   dos2unix run_test.sh
-   ./run_test.sh
+   cd sim
+   dos2unix sim_top.sh
+   ./sim_top.sh
    ```
    
 3. **Analyze results:**
@@ -79,7 +79,7 @@ dos2unix compile_riscv.sh
 ```
 1. Create a `.s` assembly file
 2. Run `./compile_riscv.sh <name of assembly file>.s`
-3. Then `./run_test.sh`
+3. Then `./sim_top.sh`
 
 Examine the `simulation_output.log` for results.
 
