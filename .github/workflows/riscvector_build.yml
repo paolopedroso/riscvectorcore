@@ -1,0 +1,38 @@
+name: RISC-V Vector Build
+
+on:
+    push:
+        branches: [ "main" ]
+    pull_request:
+        branches: [ "main" ]
+
+jobs:
+    build:
+        name: Dependencies
+
+        runs-on: ubuntu-latest
+    
+        steps:
+        - name: Install System Dependencies
+          run: |
+                sudo apt-get update
+                sudo apt-get install -y \
+                build-essential \
+                verilator \
+                dos2unix \
+                make \
+                gcc-riscv64-unknown-elf \
+                binutils-riscv64-unknown-elf \
+                python3 \
+                python3-pip \
+                python3-venv
+        - name: Verify Tool Versions
+          run: |
+                echo "=== Tool Versions ==="
+                verilator --version
+                dos2unix --version
+                riscv64-unknown-elf-as --version
+                riscv64-unknown-elf-ld --version
+                python3 --version
+                make --version
+
