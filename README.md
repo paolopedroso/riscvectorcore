@@ -55,7 +55,7 @@ sudo apt-get install gcc-riscv64-unknown-elf binutils-riscv64-unknown-elf
    ```
 
    ```
-   make clean // to remove generated files.
+   make clean
    ``` 
    
 3. **Analyze results:**
